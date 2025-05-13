@@ -394,7 +394,7 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <h2 className="text-5xl font-bold text-center text-white mb-6">Kalypso Helps Solve Hard Problems</h2>
           <p className="text-xl text-center text-white/80 max-w-3xl mx-auto mb-8">
-            Your out-of-this-world friend is an AI companion that&apos;s vertically integrated across every level of your business, making sure that your performance is excellent.
+            Your out-of-this-world friend is an AI companion that&apos;s vertically integrated across every level of your business.
           </p>
 
           <div className="flex flex-col items-center">
