@@ -1,0 +1,499 @@
+@import "tailwindcss";
+
+:root {
+  /* Base colors - shared across themes */
+  --space-white: #f8f9ff;
+  --space-light: #e9ecff;
+  --space-blue-50: #f0f4ff;
+  --space-blue-100: #e6edff;
+  --space-blue-200: #d1defd;
+  --space-blue-300: #b0c7f8;
+  --space-blue-400: #8aabf1;
+  --space-blue-500: #638ce6;
+  --space-blue-600: #4870d8;
+  --space-blue-700: #3658c4;
+  --space-blue-800: #2845a0;
+  --space-blue-900: #1c3578;
+  --space-blue-950: #101e44;
+  --space-indigo: #4f46e5;
+  --space-purple: #7c3aed;
+  --space-star: #f2e478;
+  
+  /* Functional colors */
+  --space-success: #22c55e;
+  --space-warning: #f59e0b;
+  --space-error: #ef4444;
+  --space-info: #3b82f6;
+  
+  /* Light theme variants */
+  --light-bg-primary: #e5eeff;
+  --light-bg-secondary: #eef2fc;
+  --light-bg-tertiary: #ffffff;
+  --light-card-primary: #ffffff;
+  --light-card-secondary: #f5f8ff;
+  --light-sidebar: #ffffff;
+  
+  /* Theme palette for event colors */
+  --space-blue-lightest: #e6f2ff;
+  --space-blue-light: #90caf9;
+  --space-blue-medium: #2196f3;
+  --space-blue-dark: #1976d2;
+  
+  --space-green-lightest: #e8f5e9;
+  --space-green-light: #a5d6a7;
+  --space-green-medium: #4caf50;
+  --space-green-dark: #388e3c;
+  
+  --space-amber-lightest: #fff8e1;
+  --space-amber-light: #ffe082;
+  --space-amber-medium: #ffc107;
+  --space-amber-dark: #ffa000;
+  
+  --space-purple-lightest: #f3e5f5;
+  --space-purple-light: #ce93d8;
+  --space-purple-medium: #9c27b0;
+  --space-purple-dark: #7b1fa2;
+  
+  /* Semantic theme mappings for calendar events */
+  --theme-info-bg: #e6f2ff;
+  --theme-info-border: #90caf9;
+  --theme-info-text: #1976d2;
+  
+  --theme-success-bg: #e6f9ec;
+  --theme-success-border: #a5e0b5;
+  --theme-success-text: #2a824d;
+  
+  --theme-warning-bg: #fff7e6;
+  --theme-warning-border: #ffd399;
+  --theme-warning-text: #b45309;
+  
+  --theme-accent-bg: #f3e8ff;
+  --theme-accent-border: #d8b4fe;
+  --theme-accent-text: #7e22ce;
+  
+  --theme-neutral-bg: #f8fafc;
+  --theme-neutral-border: #e2e8f0;
+  --theme-neutral-text: #475569;
+
+  /* Light theme (always on) */
+  color-scheme: light;
+  
+  /* Theme mappings */
+  --background: var(--light-bg-primary);
+  --foreground: var(--space-blue-950);
+  --primary: var(--space-blue-300);
+  --secondary: var(--space-blue-800);
+  --accent: var(--space-purple);
+  --accent-light: color-mix(in srgb, var(--space-purple) 40%, transparent);
+  --hover-color: var(--space-blue-200);
+  --hover-text: var(--space-white);
+  --border-color: var(--space-blue-200);
+  --border-light: color-mix(in srgb, var(--space-blue-200) 40%, transparent);
+  
+  /* RGB versions for opacity adjustments */
+  --hover-color-rgb: 209, 222, 253;
+  
+  /* Nav/Button specific */
+  --nav-bg: #1e293b;
+  --nav-text: white;
+  --button-bg: #4870d8;
+  --button-text: white;
+  --button-hover-bg: #3658c4;
+  --button-hover-text: white;
+  --button-active-bg: #2845a0;
+  --button-active-text: white;
+  
+  /* Component specific */
+  --sidebar-bg: var(--light-sidebar);
+  --card-bg: var(--light-card-primary);
+  --card-accent: var(--space-blue-200);
+  --emphasis-color: var(--space-blue-500);
+  --text-color: var(--space-blue-950);
+  --text-secondary: var(--space-blue-700);
+  --text-muted: var(--space-blue-400);
+  
+  /* Calendar specific theme variables */
+  --theme-leaguecard-color: var(--light-card-secondary);
+  --theme-leaguecard-accent: var(--space-blue-300);
+  --theme-border-color: var(--border-color);
+  --theme-hover-color: var(--primary);
+  --theme-hover-text: var(--hover-text);
+  --theme-text-color: var(--text-color);
+  --theme-emphasis-color: var(--emphasis-color);
+  --theme-button-color: var(--space-blue-100);
+  --theme-mainbox-color: var(--light-bg-tertiary);
+  --theme-doctorsoffice-accent: var(--space-blue-200);
+  --theme-success-color: var(--space-success);
+  --theme-shadow-color: rgba(10, 22, 70, 0.05);
+  --theme-shadow-color-darker: rgba(10, 22, 70, 0.1);
+  
+  /* Box shadows */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(10, 22, 70, 0.05);
+  --shadow-md: 0 0.25rem 0.5rem -0.125rem rgba(10, 22, 70, 0.07);
+  --shadow-lg: 0 0.625rem 1.5rem -0.5rem rgba(10, 22, 70, 0.1);
+  
+  /* Theme shadow mappings */
+  --theme-button-boxShadow: var(--shadow-md);
+  --theme-button-boxShadow-hover: var(--shadow-lg);
+  --theme-adaptive-tutoring-boxShadow: var(--shadow-sm);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-space-grotesk);
+}
+
+/* Calendar styles */
+.rbc-calendar {
+  background-color: var(--light-card-secondary);
+  color: var(--calendar-text);
+  border-color: var(--border-color);
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  border-color: var(--border-color);
+}
+
+.rbc-header {
+  background-color: var(--space-blue-100);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.rbc-day-bg {
+  background-color: var(--light-bg-tertiary);
+  color: var(--text-color);
+  border-color: var(--border-light);
+}
+
+.rbc-off-range-bg {
+  background-color: var(--light-bg-secondary);
+}
+
+.rbc-off-range {
+  color: var(--text-muted);
+}
+
+.rbc-today {
+  background-color: var(--space-blue-100);
+}
+
+.rbc-event {
+  border-color: var(--primary);
+}
+
+.rbc-toolbar button {
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+  background-color: var(--primary);
+  color: var(--hover-text);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply transitions to various elements for smooth theme changes */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+.primary-button {
+  background-color: var(--primary);
+  color: var(--hover-text);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.primary-button:hover {
+  background-color: var(--secondary);
+  transform: translateY(-0.0625rem);
+  box-shadow: var(--shadow-md);
+}
+
+.secondary-button {
+  background-color: var(--space-blue-50);
+  color: var(--foreground);
+  border: 0.0625rem solid var(--border-color);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.secondary-button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-0.0625rem);
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-item {
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  color: var(--text-secondary);
+  background-color: transparent;
+}
+
+.sidebar-item:hover {
+  background-color: var(--space-blue-100);
+  color: var(--primary);
+}
+
+/* Menu icon pulse animation */
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.menu-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+/* Space-themed scrollbar */
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--space-blue-100);
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--space-blue-300);
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--space-blue-400);
+}
+
+/* Text glow effect for better visibility against video backgrounds */
+.text-shadow-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 
+               0 0 20px rgba(255, 255, 255, 0.5),
+               0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+/* Add explicit sidebar styles to ensure opacity */
+.bg-sidebar-bg, 
+[class*="bg-sidebar-bg"], 
+[style*="--sidebar-bg"] {
+  background-color: var(--sidebar-bg) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure sidebar is fully opaque */
+[style*="--sidebar-bg"],
+.bg-sidebar-bg {
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Fix the hover styles */
+.student-item {
+  transition: all 0.2s ease;
+}
+
+.student-item:hover {
+  background-color: var(--space-blue-100);
+  box-shadow: var(--shadow-md);
+}
+
+/* Responsive font sizing for different screen sizes */
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+  font-size: 0.875rem; /* 14px base font size */
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 0.9375rem; /* 15px */
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 0.9375rem; /* 15px */
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply transitions to various elements for smooth theme changes */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+/* Support for future alternate themes */
+/* Default is space theme - these are just placeholders for future theme development */
+body.theme-cosmic {
+  /* Cosmic theme variables would go here */
+  --theme-emphasis-color: #9d4edd;
+}
+
+body.theme-nebula {
+  /* Nebula theme variables would go here */
+  --theme-emphasis-color: #ff6b6b;
+}
+
+body.theme-aurora {
+  /* Aurora theme variables would go here */
+  --theme-emphasis-color: #64dfdf;
+}
+
+/* Animation keyframes */
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.menu-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.25rem);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+/* Add styles for content blur when sidebar is active */
+.content-blurred {
+  filter: blur(4px);
+  transition: filter 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.7;
+  position: relative;
+}
+
+/* Create an overlay for blurred content */
+.content-blurred::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 15;
+}
+
+/* Ensure sidebar remains interactive when content is blurred */
+aside,
+[class*="fixed left-0"] {
+  filter: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  box-shadow: 0 0 1.5rem rgba(10, 22, 70, 0.1);
+}
+
+/* Ensure menu button remains interactive */
+.fixed.left-4.top-4.z-30 {
+  filter: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+/* Remove scrollbar from sidebar */
+aside::-webkit-scrollbar,
+[class*="overflow-y-auto"]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure smooth transitions for all elements */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease,
+              filter 0.3s ease,
+              opacity 0.3s ease;
+}
