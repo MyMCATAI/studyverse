@@ -6,6 +6,13 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 
+// Import components
+import Navbar from '@/components/Navbar'
+import Investment from '@/components/Investment'
+import MyCaseStudy from '@/components/MyCaseStudy'
+import KalypsoSection from '@/components/KalypsoSection'
+import Modals from '@/components/Modals'
+
 // Dynamically import the Globe component to avoid SSR issues
 const DynamicGlobe = dynamic(() => import('@/components/ui/globe').then(mod => mod.World), { ssr: false })
 
@@ -152,145 +159,22 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <nav className="w-full bg-[#083462] shadow-md p-4 flex justify-between items-center text-white z-20">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/StudyverseLogo.png"
-            alt="Studyverse Logo"
-            width={40}
-            height={40}
-            className="w-10 h-10 object-contain"
-          />
-          <span className="text-xl">
-            <span className="font-normal">STUDYVERSE</span>
-          </span>
-        </div>
-        
-        <div className="hidden md:flex items-center gap-8 text-white/90">
-          <a href="#tutors" className="hover:text-white transition-colors">For Tutors</a>
-          <a href="#firms" className="hover:text-white transition-colors">For Firms</a>
-          <a href="#students" className="hover:text-white transition-colors">For Students</a>
-          <a href="#" className="hover:text-white transition-colors">Pricing</a>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => handleGatedLinkClick('/tutor')}
-            className="relative px-8 py-2 rounded-md bg-teal-600 text-white font-semibold tracking-wide transition-all duration-300 hover:bg-teal-700 hover:text-white hover:scale-105 hover:shadow-md active:bg-teal-800 active:text-white"
-          >
-            Tutor
-          </button>
-          
-          <button
-            onClick={() => handleGatedLinkClick('https://mymcat.ai')}
-            className="relative px-6 py-2 rounded-md bg-teal-600 text-white font-semibold tracking-wide transition-all duration-300 hover:bg-teal-700 hover:text-white hover:scale-105 hover:shadow-md active:bg-teal-800 active:text-white"
-          >
-            Student
-          </button>
-        </div>
-      </nav>
+      <Navbar onGatedLinkClick={handleGatedLinkClick} />
 
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={closeVideoModal}>
-          <div className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-            <iframe
-              className="absolute w-full h-full"
-              src="https://www.youtube.com/embed/_0jkXujlHdQ?si=SgXqn5UgqeanoFxX&autoplay=1"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            ></iframe>
-            <button 
-              className="absolute top-4 right-4 bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-              onClick={closeVideoModal}
-              aria-label="Close modal"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Code Entry Prompt Modal */}
-      {showCodePrompt && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={closeCodePrompt}>
-          <div
-            className="bg-gradient-to-br from-[#0a1c3b] to-[#083462] p-8 rounded-xl shadow-2xl w-full max-w-md text-white border border-white/20"
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-2xl font-bold mb-6 text-center">Enter Access Code</h3>
-            <p className="text-center text-white/80 mb-6">Please enter the developer code to proceed.</p>
-            <input
-              type="password"
-              value={enteredCode}
-              onChange={(e) => {
-                setEnteredCode(e.target.value);
-                setCodeError(null);
-              }}
-              onKeyPress={handleCodeKeyPress}
-              placeholder="Developer Code"
-              className="w-full px-4 py-3 rounded-md bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-teal-400 mb-4"
-              autoFocus
-            />
-            {codeError && (
-              <p className="text-red-400 text-sm mb-4 text-center">{codeError}</p>
-            )}
-            <div className="flex justify-center gap-4">
-               <button
-                onClick={checkCode}
-                className="px-6 py-2 rounded-md bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-colors duration-300"
-              >
-                Submit
-              </button>
-              <button
-                onClick={closeCodePrompt}
-                className="px-6 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors duration-300"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Calendar Modal */}
-      {showCalendarModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4" onClick={closeCalendarModal}>
-          <div 
-            className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-xl font-bold text-[#083462]">Schedule a Meeting</h3>
-              <button 
-                className="text-gray-500 hover:text-gray-700"
-                onClick={closeCalendarModal}
-                aria-label="Close modal"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto">
-              <iframe 
-                src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ3hMOL4oJtFVHit6w6WyM2EuvBFRPoG59w6a-T0rU14-PWTIPMVRDlOx3PrYoVMpNYOVo4UhVXk?gv=true" 
-                style={{ border: 0 }} 
-                width="100%" 
-                height="800" 
-                frameBorder="0"
-                title="Google Calendar Appointment Scheduling"
-                className="w-full h-full min-h-[80vh]"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <Modals 
+        showVideoModal={showVideoModal}
+        closeVideoModal={closeVideoModal}
+        showCodePrompt={showCodePrompt}
+        closeCodePrompt={closeCodePrompt}
+        showCalendarModal={showCalendarModal}
+        closeCalendarModal={closeCalendarModal}
+        targetUrl={targetUrl}
+        enteredCode={enteredCode}
+        setEnteredCode={setEnteredCode}
+        codeError={codeError}
+        checkCode={checkCode}
+        handleCodeKeyPress={handleCodeKeyPress}
+      />
 
       <section className="relative min-h-screen overflow-hidden bg-[#171234]">
         {/* Background video */}
@@ -384,122 +268,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="learn-more" className="py-20 bg-gradient-to-b from-[#0d4e93] to-white relative overflow-hidden">
-        {/* Background elements for modern UI */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-teal-400 filter blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-600 filter blur-3xl"></div>
-        </div>
+      {/* Investment Section */}
+      <Investment />
+      
+      {/* MyMCAT.ai Case Study - Moved below Investment */}
+      <MyCaseStudy />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <h2 className="text-5xl font-bold text-center text-white mb-6">Kalypso Helps Solve Hard Problems</h2>
-          <p className="text-xl text-center text-white/80 max-w-3xl mx-auto mb-8">
-            Your out-of-this-world friend is an AI companion that&apos;s vertically integrated across every level of your business.
-          </p>
-
-          <div className="flex flex-col items-center">
-
-            {/* Integrated layout with Kalypso on the left and cards on the right */}
-            <div className="flex flex-col lg:flex-row gap-10 items-center max-w-6xl mx-auto mb-12">
-              {/* Kalypso on the left side for desktop, or above on mobile */}
-              <div className="w-full lg:w-2/5 flex justify-center">
-                <div className="relative">
-                  <div className="w-[330px] h-[330px] flex items-center justify-center">
-                    <Image
-                      src="/kalypsoeating.gif"
-                      alt="Kalypso AI assistant"
-                      width={330}
-                      height={330}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md">
-                    <p className="text-[#083462] font-medium text-sm">Your AI companion</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Three feature cards stacked vertically on the right */}
-              <div className="w-full lg:w-3/5 space-y-4">
-                {/* Tutors Card */}
-                <div className="bg-[#feffff] rounded-xl shadow-lg transition-all duration-300 overflow-hidden hover:shadow-xl hover:translate-x-[5px] group">
-                  <div className="p-5 flex items-center">
-                    <div className="bg-teal-100 w-14 h-14 rounded-full flex items-center justify-center shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-teal-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
-                        <path d="M3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-                      </svg>
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <h3 className="font-semibold text-xl text-[#083462] mb-1">For Tutors</h3>
-                      <p className="text-gray-600">Kalypso creates personalized lesson plans, remembers student data, and generates targeted homework assignments.</p>
-                    </div>
-                    <div className="ml-2 text-teal-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Firms Card */}
-                <div className="bg-[#feffff] rounded-xl shadow-lg transition-all duration-300 overflow-hidden hover:shadow-xl hover:translate-x-[5px] group">
-                  <div className="p-5 flex items-center">
-                    <div className="bg-blue-100 w-14 h-14 rounded-full flex items-center justify-center shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
-                      </svg>
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <h3 className="font-semibold text-xl text-[#083462] mb-1">For Firms</h3>
-                      <p className="text-gray-600">Kalypso handles scheduling, tracks tutor-student matching, and provides actionable analytics on business performance.</p>
-                    </div>
-                    <div className="ml-2 text-blue-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Students Card */}
-                <div className="bg-[#feffff] rounded-xl shadow-lg transition-all duration-300 overflow-hidden hover:shadow-xl hover:translate-x-[5px] group">
-                  <div className="p-5 flex items-center">
-                    <div className="bg-purple-100 w-14 h-14 rounded-full flex items-center justify-center shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                      </svg>
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <h3 className="font-semibold text-xl text-[#083462] mb-1">For Students</h3>
-                      <p className="text-gray-600">Kalypso creates an interactive learning environment with personalized quizzes, flashcards, and progress tracking.</p>
-                    </div>
-                    <div className="ml-2 text-purple-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <a href="#tutors" className="px-8 py-3 bg-white text-[#083462] font-semibold rounded-lg shadow hover:shadow-md transition-all duration-300 inline-flex items-center gap-2">
-                Learn more about our solutions
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tutors Section */}
+      {/* Tutors Section with Kalypso */}
       <section id="tutors" className="py-24 bg-gradient-to-br from-teal-50 to-white relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent"></div>
         <div className="container mx-auto px-4">
+          <h2 className="text-5xl font-bold text-center text-[#083462] mb-16">Kalypso Helps Solve Hard Problems</h2>
+          
+          <KalypsoSection />
+          
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="w-full lg:w-1/2 order-2 lg:order-1">
               <span className="text-teal-600 font-semibold text-lg mb-2 block tracking-wide">FOR TUTORS</span>
@@ -709,180 +491,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MyMCAT.ai Case Study - Redesigned - MOVED AFTER ALL THREE SECTIONS */}
-      <section className="py-24 bg-white text-[#083462] relative overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-teal-400 filter blur-3xl"></div>
-          <div className="absolute bottom-1/3 left-1/3 w-80 h-80 rounded-full bg-blue-300 filter blur-3xl"></div>
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto">
-            {/* Case Study Header */}
-            <div className="text-center mb-16">
-              <span className="inline-block px-4 py-1 rounded-full bg-[#083462]/10 text-[#083462] font-medium text-sm tracking-wider mb-4">CASE STUDY</span>
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight text-[#083462]">MyMCAT.ai: A Case Study</h2>
-              <p className="text-xl text-[#083462]/80 max-w-3xl mx-auto">
-                We&apos;ve already built a studyverse for premeds in the hardest test in the world as a prototype for our company.
-              </p>
-            </div>
-
-            {/* Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-              <div className="bg-[#083462]/5 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-[#083462]/10 transition-all duration-300 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-5xl font-bold text-[#083462] mb-3">1000+</h3>
-                  <p className="text-lg text-[#083462]/80 mb-2">Active Students</p>
-                </div>
-                <p className="text-sm text-[#083462]/60 mt-2">
-                  These students were captured with 0 paid ads over three months.
-                </p>
-              </div>
-
-              <div className="bg-[#083462]/5 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-[#083462]/10 transition-all duration-300 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-5xl font-bold text-[#083462] mb-3">2.8 hrs</h3>
-                  <p className="text-lg text-[#083462]/80 mb-2">Peak Daily Usage</p>
-                </div>
-                <p className="text-sm text-[#083462]/60 mt-2">
-                  Peak usage in Feb 2024. Overall is 1.8 hrs (4x Duolingo avg).
-                </p>
-              </div>
-
-              <div className="bg-[#083462]/5 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-[#083462]/10 transition-all duration-300 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-5xl font-bold text-[#083462] mb-3">34%</h3>
-                  <p className="text-lg text-[#083462]/80 mb-1">Percentile Jump</p>
-                </div>
-                <p className="text-sm text-[#083462]/60 mt-2">
-                  Avg. for users &gt; 25 hrs study time (+11.2 MCAT points).
-                </p>
-              </div>
-            </div>
-
-            {/* Student Stars Section - Moved above the main testimonial video */}
-            <h3 className="text-3xl font-bold mb-8 text-center text-[#083462]">Student Success Stories</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {/* Kaya - Now first/left */}
-              <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-xl overflow-hidden shadow-md border border-[#083462]/10 flex flex-col items-center relative">
-                <div className="w-full aspect-video relative">
-                  <video 
-                    className="w-full h-full object-cover"
-                    src="https://my-mcat.s3.us-east-2.amazonaws.com/studyverse/Kaya.mov"
-                    controls
-                    preload="auto"
-                    muted
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <div className="p-4 w-full">
-                  <h4 className="font-bold text-xl text-[#083462] mb-2">Kaya</h4>
-                  <div className="flex text-yellow-400 mb-3 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-lg font-bold text-teal-600 mb-1">
-                    43rd → 92nd Percentile
-                  </p>
-                  <p className="text-md text-[#083462]/80">
-                    +19 Points
-                  </p>
-                </div>
-              </div>
-
-              {/* Sanjay - Now center */}
-              <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-xl overflow-hidden shadow-md border border-[#083462]/10 flex flex-col items-center relative">
-                <div className="w-full aspect-video relative">
-                  <video 
-                    className="w-full h-full object-cover"
-                    src="https://my-mcat.s3.us-east-2.amazonaws.com/studyverse/Sanjay.mov"
-                    controls
-                    preload="auto"
-                    muted
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <div className="p-4 w-full">
-                  <h4 className="font-bold text-xl text-[#083462] mb-2">Sanjay</h4>
-                  <div className="flex text-yellow-400 mb-3 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-lg font-bold text-teal-600 mb-1">
-                    48th → 85th Percentile
-                  </p>
-                  <p className="text-md text-[#083462]/80">
-                    +16 Points
-                  </p>
-                </div>
-              </div>
-              
-              {/* Eni - Now right */}
-              <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-xl overflow-hidden shadow-md border border-[#083462]/10 flex flex-col items-center relative">
-                <div className="w-full aspect-video relative">
-                  <video 
-                    className="w-full h-full object-cover"
-                    src="https://my-mcat.s3.us-east-2.amazonaws.com/studyverse/Eni.mov"
-                    controls
-                    preload="auto"
-                    muted
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <div className="p-4 w-full">
-                  <h4 className="font-bold text-xl text-[#083462] mb-2">Eni</h4>
-                  <div className="flex text-yellow-400 mb-3 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-lg font-bold text-teal-600 mb-1">
-                    19th → 87th Percentile
-                  </p>
-                  <p className="text-md text-[#083462]/80">
-                    +21 Points
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Video Testimonials - Now below the individual student videos */}
-            <div className="mb-16 rounded-xl overflow-hidden shadow-lg border border-[#083462]/10 max-w-4xl mx-auto">
-              <video
-                className="w-full h-auto aspect-video"
-                src="https://my-mcat.s3.us-east-2.amazonaws.com/studyverse/testimonials.mp4"
-                controls
-                playsInline
-                preload="metadata"
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            <div className="text-center mt-16">
-              <a href="https://www.mymcat.ai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-[#083462] text-white font-semibold rounded-xl hover:bg-[#083462]/90 transition-colors duration-300">
-                Visit MyMCAT.ai
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-      
       <section className="py-24 bg-gradient-to-br from-[#083462] to-[#0a1c3b] text-white relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute inset-0 opacity-10">
@@ -892,7 +500,7 @@ export default function Home() {
         
         <div className="container mx-auto px-4 relative z-10 text-center">
           <span className="inline-block px-4 py-1 rounded-full bg-white/10 text-white font-medium text-sm tracking-wider mb-6">GET STARTED</span>
-          <h2 className="text-4xl lg:text-5xl font-bold mb-8 leading-tight max-w-4xl mx-auto">Ready to Transform Your Educational Experience?</h2>
+          <h2 className="text-4xl lg:text-5xl font-bold mb-8 leading-tight max-w-4xl mx-auto">Create a world for your firm</h2>
           
           {/* Globe moved here, directly under the header */}
           <div className="w-full max-w-3xl h-[400px] rounded-lg overflow-hidden mx-auto mb-12">
@@ -908,7 +516,7 @@ export default function Home() {
               onClick={openCalendarModal}
               className="px-8 py-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-lg font-bold rounded-xl hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-300 hover:-translate-y-1 flex-1 flex items-center justify-center gap-2"
             >
-              <span>Get Started Free</span>
+              <span>Join Our Alliance</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
@@ -949,6 +557,11 @@ export default function Home() {
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
