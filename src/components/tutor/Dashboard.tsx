@@ -840,11 +840,6 @@ export default function Dashboard({ sessions: initialSessions, onNavigateToStude
     }
   };
 
-  // This effect ensures that we don't have cascading state updates
-  // when switching between tutoring and student modes
-  useEffect(() => {
-    console.log(`View mode changed to: ${viewMode}`);
-  }, [viewMode]);
 
   // Filter upcoming sessions (only those in the future)
   const upcomingSessions = sessions.filter(session => {
