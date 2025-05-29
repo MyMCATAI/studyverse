@@ -5,6 +5,7 @@ import TutorSidebar from '@/components/tutor/TutorSidebar'
 import StudentActions from '@/components/tutor/StudentActions'
 import Dashboard from '@/components/tutor/Dashboard'
 import TutorNavbar from '@/components/tutor/TutorNavbar'
+import KalypsoChat from '@/components/kalypso/KalypsoChat'
 import { Menu } from 'lucide-react'
 
 // Student and session types
@@ -97,22 +98,6 @@ export default function TutorPage() {
       schedule: "Next session: Tuesday, 4:45 PM"
     }
   ];
-
-  // Add script to head when component mounts
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://elevenlabs.io/convai-widget/index.js'
-    script.async = true
-    script.type = 'text/javascript'
-    document.head.appendChild(script)
-
-    return () => {
-      // Clean up script when component unmounts
-      if (document.head.contains(script)) {
-        document.head.removeChild(script)
-      }
-    }
-  }, [])
 
   // Apply blur effect to main content when sidebar is open
   useEffect(() => {
@@ -211,11 +196,8 @@ export default function TutorPage() {
         )}
       </div>
 
-      {/* ElevenLabs Conversational AI Widget - Bottom Right */}
-      <div className="fixed bottom-4 right-4 z-50">
-        {/* @ts-expect-error - ElevenLabs custom element */}
-        <elevenlabs-convai agent-id="mJY8ySBldDTw9HVileNK"></elevenlabs-convai>
-      </div>
+      {/* Kalypso Chat Widget - Bottom Right */}
+      <KalypsoChat />
     </div>
   );
 } 
