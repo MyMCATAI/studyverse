@@ -12,7 +12,18 @@ interface ChatMessage {
   isLoading?: boolean; // To show a loading state for the AI message before content arrives
 }
 
-export default function KalypsoChat() {
+interface KalypsoChatProps {
+  pageContext: string;
+  tutorName: string;
+}
+
+const KALYPSO_IMAGE_SIZE = 200; // Define size for reuse
+const SCREEN_PADDING = 20; // Define padding from screen edges
+const CHAT_UI_WIDTH_MD = 400;
+const CHAT_UI_WIDTH_SM = 350;
+const GAP_ABOVE_IMAGE = 8; // Space between top of image and bottom of chat UI
+
+export default function KalypsoChat({ pageContext, tutorName }: KalypsoChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -21,6 +32,82 @@ export default function KalypsoChat() {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null); // For auto-scrolling
+  const inputRef = useRef<HTMLInputElement>(null); // Ref for the input field
+
+  // For Draggable Kalypso
+  const [position, setPosition] = useState({ x: 0, y: 0 }); // Initial X will be calculated
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartCoords = useRef<{ x: number; y: number } | null>(null); // Store initial mouse coords
+  const elementStartCoords = useRef<{ x: number; y: number } | null>(null); // Store initial element coords
+  const kalypsoRef = useRef<HTMLDivElement>(null);
+  const [didDrag, setDidDrag] = useState(false); // Flag to check if dragging occurred
+
+  useEffect(() => {
+    // Set initial Y position to be bottom-right after component mounts and window is available
+    setPosition({ 
+        x: window.innerWidth - KALYPSO_IMAGE_SIZE - SCREEN_PADDING, 
+        y: window.innerHeight - KALYPSO_IMAGE_SIZE - SCREEN_PADDING 
+    });
+  }, []);
+
+  // Autofocus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    // Check if the click is on the image part (the direct child of kalypsoRef) or on the chat UI itself
+    // If the click is within the chat UI (which is absolutely positioned), do not start drag.
+    if (target.closest('.chat-ui-container')) {
+        return;
+    }
+    // Allow drag if clicking on Kalypso image or its immediate wrapper if chat is closed/open
+    // Or if it's specifically on the image if chat is open and above it.
+    // The current logic seems okay as long as chat UI stops propagation or this check is fine.
+
+    if (!kalypsoRef.current) return;
+    setIsDragging(true);
+    setDidDrag(false);
+    dragStartCoords.current = { x: e.clientX, y: e.clientY };
+    const rect = kalypsoRef.current.getBoundingClientRect();
+    elementStartCoords.current = { x: rect.left, y: rect.top };
+    e.preventDefault(); // Prevent text selection ONLY when a drag is initiated on a draggable area
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !dragStartCoords.current || !elementStartCoords.current) return;
+    setDidDrag(true);
+    let newX = elementStartCoords.current.x + (e.clientX - dragStartCoords.current.x);
+    let newY = elementStartCoords.current.y + (e.clientY - dragStartCoords.current.y);
+    if (kalypsoRef.current && kalypsoRef.current.parentElement) {
+        const parentRect = kalypsoRef.current.parentElement.getBoundingClientRect();
+        // Use KALYPSO_IMAGE_SIZE for element dimensions as kalypsoRef is now fixed to this size
+        newX = Math.max(0, Math.min(newX, parentRect.width - KALYPSO_IMAGE_SIZE));
+        newY = Math.max(0, Math.min(newY, parentRect.height - KALYPSO_IMAGE_SIZE));
+    }
+    setPosition({ x: newX, y: newY });
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -92,9 +179,9 @@ export default function KalypsoChat() {
         body: JSON.stringify({
           message: newUserMessage.text,
           threadId: threadId,
-          generateAudio: true, // Request audio for AI responses
-          // context: "Some context",
-          // assistantId: "your-assistant-id"
+          generateAudio: true,
+          tutorName: tutorName,
+          context: pageContext
         }),
       });
 
@@ -177,64 +264,46 @@ export default function KalypsoChat() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-0 bg-transparent border-none rounded-full cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
-          aria-label="Open Kalypso Chat"
-        >
-          <Image
-            src={kalypsoGif}
-            alt="Kalypso Chat Icon"
-            width={200}
-            height={200}
-            className="rounded-full shadow-lg transition-shadow duration-300"
-            unoptimized
-          />
-        </button>
-      )}
-
+    // Main container for Kalypso: Draggable icon + Chat UI
+    // When not open, only the icon is effectively visible and draggable.
+    // When open, the whole unit (icon + chat bubbles + input) conceptually moves together.
+    <div 
+      ref={kalypsoRef} 
+      className="fixed z-50 cursor-grab transition-all duration-100 ease-out"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: `${KALYPSO_IMAGE_SIZE}px`, // Explicitly set width for the draggable container
+        height: `${KALYPSO_IMAGE_SIZE}px`, // Explicitly set height for the draggable container
+      }}
+      onMouseDown={handleMouseDown} // Drag handle is the whole container
+    >
+      {/* Chat UI - Absolutely positioned above the Kalypso image container */}
       {isOpen && (
-        <div className="w-80 md:w-96 h-[28rem] md:h-[32rem] bg-white rounded-lg shadow-xl flex flex-col">
-          <div className="bg-emerald-500 p-3 flex justify-between items-center rounded-t-lg">
-            <h3 className="text-white font-semibold text-lg">Chat with Kalypso</h3>
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                if (eventSourceRef.current) {
-                  eventSourceRef.current.close();
-                  eventSourceRef.current = null;
-                }
-                if (currentAudio) {
-                  currentAudio.pause();
-                  setCurrentAudio(null);
-                }
-              }}
-              className="text-white hover:text-emerald-100"
-              aria-label="Close chat"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
+        <div 
+            className="chat-ui-container absolute left-1/2 -translate-x-1/2 w-[350px] md:w-[400px] flex flex-col"
+            style={{
+                bottom: `calc(100% + ${GAP_ABOVE_IMAGE}px)`, // Position bottom of chat UI above the top of kalypsoRef
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent clicks inside from bubbling to drag or toggle logic
+        >
+          <div ref={chatContainerRef} className="flex-1 p-1 space-y-3 overflow-y-auto max-h-96 no-scrollbar bg-transparent">
             {chatHistory.map((chat) => (
               <div key={chat.id} className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[75%] p-2.5 rounded-xl text-sm break-words ${
+                  className={`max-w-[80%] p-3.5 text-lg rounded-3xl shadow-xl break-words transition-all duration-300 ease-in-out transform hover:scale-105 ${
                     chat.sender === 'user'
-                      ? 'bg-emerald-500 text-white rounded-br-none'
-                      : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                      ? 'bg-blue-600 text-white rounded-br-xl' // Changed to blue, adjusted rounding for tail
+                      : 'bg-slate-200 text-slate-800 rounded-bl-xl' // Adjusted rounding for tail
                   }`}
                 >
-                  {chat.isLoading ? 'Kalypso is thinking...' : chat.text}
+                  {chat.isLoading ? ( 
+                    <span className="italic text-slate-500">Kalypso is thinking...</span>
+                  ) : chat.text}
                   {chat.sender === 'ai' && chat.audio && !chat.isLoading && (
                     <button 
                       onClick={() => playAudio(chat.audio!)} 
-                      className="ml-2 mt-1 text-xs text-emerald-700 hover:text-emerald-900 underline block"
+                      className="ml-1 mt-1.5 text-xs text-blue-700 hover:text-blue-900 underline block"
                       aria-label="Play audio response"
                     >
                       Play Audio
@@ -245,24 +314,25 @@ export default function KalypsoChat() {
             ))}
           </div>
 
-          <div className="p-3 border-t border-gray-200 bg-white rounded-b-lg">
+          <div className="p-2 mt-2"> 
             <div className="flex items-center space-x-2">
               <input
+                ref={inputRef} // Assign ref to input
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
                 placeholder="Ask Kalypso..."
-                className="flex-1 p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+                className="flex-1 p-3.5 text-lg border-2 border-slate-400 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-2xl bg-white/95 backdrop-blur-md placeholder-slate-500 transition-all duration-300 ease-in-out focus:shadow-blue-400/50"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading}
-                className="p-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+                className="p-3.5 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 disabled:opacity-60 transition-all duration-300 ease-in-out shadow-2xl hover:shadow-blue-400/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-70"
                 aria-label="Send message"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                 </svg>
               </button>
@@ -270,6 +340,75 @@ export default function KalypsoChat() {
           </div>
         </div>
       )}
+      
+      {/* Kalypso Image Container - This is what kalypsoRef refers to for its fixed size */}
+      {/* The onClick to toggle chat is now here */} 
+      <div
+          className={`w-full h-full p-0 bg-transparent border-none rounded-full transition-all duration-300 ease-in-out group ${!isOpen ? 'hover:scale-105 hover:shadow-2xl' : ''}`}
+          aria-label={isOpen ? "Close Kalypso Chat" : "Open Kalypso Chat"}
+          onClick={(e) => { 
+            if (e.target !== e.currentTarget) { 
+                // Click was on a child of this div (e.g. if something was overlaid on image), let it bubble or handle if necessary
+                // For now, assume only direct clicks on this div or its immediate image child should toggle
+                // This check might be overly cautious if image is the only child.
+            } 
+            if (!didDrag) { 
+              setIsOpen(!isOpen);
+            }
+            // No stopPropagation needed here as this is the intended click target for toggling
+          }}
+        >
+          <Image
+            src={kalypsoGif}
+            alt="Kalypso Chat Icon"
+            width={KALYPSO_IMAGE_SIZE} // Image fills the fixed-size kalypsoRef container
+            height={KALYPSO_IMAGE_SIZE} // Image fills the fixed-size kalypsoRef container
+            className="rounded-full shadow-2xl transition-shadow duration-300 select-none group-hover:shadow-blue-400/50 pointer-events-none" // Added pointer-events-none to Image
+            unoptimized
+            draggable="false"
+          />
+        </div>
     </div>
   );
-} 
+}
+
+// Basic speech bubble CSS (add to your global.css or a relevant CSS module)
+/*
+.speech-bubble-user {
+  position: relative;
+  border-radius: .4em;
+}
+.speech-bubble-user::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: #10b981; // Match user bubble bg color
+  border-right: 0;
+  border-bottom: 0;
+  margin-top: -5px;
+  margin-right: -10px;
+}
+
+.speech-bubble-ai {
+  position: relative;
+  border-radius: .4em;
+}
+.speech-bubble-ai::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: #e5e7eb; // Match AI bubble bg color
+  border-left: 0;
+  border-bottom: 0;
+  margin-top: -5px;
+  margin-left: -10px;
+}
+*/ 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ElevenLabsClient } from "elevenlabs";
+import { getTutorBaseSystemPrompt, getPageContextSystemPrompt } from "../../../../lib/prompts";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -32,7 +33,7 @@ async function createAudioStreamFromText(text: string): Promise<Buffer> {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, context, threadId: clientThreadId, generateAudio, assistantId: clientAssistantId } = body;
+    const { message, context: pageSpecificContext, threadId: clientThreadId, generateAudio, assistantId: clientAssistantId, tutorName = "Evan" } = body;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "OpenAI API Key not configured." }, { status: 503 });
@@ -47,13 +48,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Server configuration error: Assistant ID missing.' }, { status: 500 });
     }
     
-    const fullUserMessage = context ? `Context: ${context}\n\nUser Message: ${message}` : message;
+    const fullUserMessage = pageSpecificContext ? `Context: ${pageSpecificContext}\n\nUser Message: ${message}` : message;
 
     let currentThreadId = clientThreadId;
 
     if (!currentThreadId) {
       const thread = await openai.beta.threads.create();
       currentThreadId = thread.id;
+    }
+
+    const baseSystemInstructions = getTutorBaseSystemPrompt(tutorName);
+    let finalSystemInstructions = baseSystemInstructions;
+
+    if (pageSpecificContext && typeof pageSpecificContext === 'string' && pageSpecificContext.trim() !== '') {
+      finalSystemInstructions = getPageContextSystemPrompt(baseSystemInstructions, pageSpecificContext);
     }
 
     await openai.beta.threads.messages.create(currentThreadId, {
@@ -75,6 +83,7 @@ export async function POST(req: Request) {
         try {
           run = openai.beta.threads.runs.stream(currentThreadId, {
             assistant_id: currentAssistantId,
+            instructions: finalSystemInstructions
           });
 
           for await (const event of run) {

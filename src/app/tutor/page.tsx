@@ -30,6 +30,7 @@ export default function TutorPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<null | Student>(null);
   const [isDashboardActive, setIsDashboardActive] = useState(true);
+  const [kalypsoPageContext, setKalypsoPageContext] = useState<string>("You are currently viewing the main tutor dashboard.");
 
   // Sample upcoming sessions data
   const upcomingSessions: Session[] = [
@@ -99,6 +100,25 @@ export default function TutorPage() {
     }
   ];
 
+  // Update Kalypso's page context when view changes
+  useEffect(() => {
+    if (isDashboardActive) {
+      // Create a summary of upcoming sessions for context
+      const sessionSummary = upcomingSessions.slice(0, 2).map(s => `${s.studentName} on ${s.date} at ${s.time} for ${s.topic}`).join('; ');
+      setKalypsoPageContext(`Evan is viewing the main tutor dashboard. Upcoming sessions include: ${sessionSummary}. Evan can see an overview of their students and their schedules here.`);
+    } else if (selectedStudent) {
+      setKalypsoPageContext(
+        `Evan is currently viewing the detailed profile for student: ${selectedStudent.name}. \
+Student Summary: ${selectedStudent.summary}. \
+Progress: ${selectedStudent.progress}%. \
+Next scheduled session: ${selectedStudent.schedule}. \
+Evan might be looking to understand this student's needs, plan a session, or update their information.`
+      );
+    } else {
+      setKalypsoPageContext("Evan is on the tutor page, but no specific view (dashboard or student) is active.");
+    }
+  }, [isDashboardActive, selectedStudent, upcomingSessions]); // Add upcomingSessions to dependencies
+
   // Apply blur effect to main content when sidebar is open
   useEffect(() => {
     const mainContent = document.getElementById('main-content');
@@ -117,11 +137,10 @@ export default function TutorPage() {
 
   // Handle navigation to student profile from Dashboard
   const handleNavigateToStudent = (studentName: string) => {
-    // Find the student by name
     const student = students.find(s => s.name === studentName);
     if (student) {
       setSelectedStudent(student);
-      setIsDashboardActive(false); // Switch to student view
+      setIsDashboardActive(false);
     }
   };
 
@@ -137,19 +156,10 @@ export default function TutorPage() {
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
         <div 
-          className="bg-[#10b981] p-2.5 rounded-full shadow-lg transition-all duration-300 
-                    hover:shadow-[0_0_20px_rgba(16,185,129,0.8)] 
-                    hover:bg-[#059669] group"
-          style={{
-            boxShadow: '0 0 10px rgba(16,185,129,0.3)'
-          }}
+          className="bg-blue-500 p-2.5 rounded-full shadow-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] hover:bg-blue-600 group"
+          style={{ boxShadow: '0 0 10px rgba(59,130,246,0.3)' }}
         >
-          <Menu 
-            size={22} 
-            className="text-white transition-all duration-300 
-                      group-hover:scale-110 menu-pulse" 
-            strokeWidth={2.5}
-          />
+          <Menu size={22} className="text-white transition-all duration-300 group-hover:scale-110 menu-pulse" strokeWidth={2.5}/>
         </div>
       </div>
       
@@ -197,7 +207,7 @@ export default function TutorPage() {
       </div>
 
       {/* Kalypso Chat Widget - Bottom Right */}
-      <KalypsoChat />
+      <KalypsoChat pageContext={kalypsoPageContext} tutorName="Evan" />
     </div>
   );
 } 
