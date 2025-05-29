@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Image from 'next/image';
 import kalypsoGif from './kalypsoend.gif';
 import KalypsoWhiteboardMessage from './KalypsoWhiteboardMessage';
-import { KalypsoPageContext, WhiteboardAction } from '../types/kalypso';
+import { KalypsoPageContext, WhiteboardAction } from '../../types/kalypso';
 
 interface ChatMessage {
   id: string; // Unique ID for each message, useful for streaming updates
@@ -20,12 +20,19 @@ interface KalypsoChatProps {
   onWhiteboardAction?: (action: WhiteboardAction) => void;
 }
 
+// Define the type for the methods exposed via the ref
+export interface KalypsoChatRef {
+  sendAutomatedMessage: (prompt: string, isHidden?: boolean) => void;
+  clearChatHistory: () => void; // Added a utility to clear chat if needed
+}
+
 const KALYPSO_IMAGE_SIZE = 200; // Define size for reuse
-const SCREEN_PADDING = 100; // Define padding from screen edge
+const SCREEN_PADDING = 10; // Define padding from screen edge
 const GAP_ABOVE_IMAGE = 8; // Space between top of image and bottom of chat UI
 const RIGHT_OFFSET = 200; // Additional offset from right edge
 
-export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction }: KalypsoChatProps) {
+// Wrap component with forwardRef
+const KalypsoChat = forwardRef<KalypsoChatRef, KalypsoChatProps>(({ pageContext, tutorName, onWhiteboardAction }, ref) => {
   const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -35,6 +42,9 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
   const eventSourceRef = useRef<EventSource | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null); // For auto-scrolling
   const inputRef = useRef<HTMLInputElement>(null); // Ref for the input field
+  const [hasPlayedWelcomeAudio, setHasPlayedWelcomeAudio] = useState(false);
+  const [isIconAnimatedIn, setIsIconAnimatedIn] = useState(false);
+  const [isWhiteboardAnimatingIn, setIsWhiteboardAnimatingIn] = useState(false); // For delayed whiteboard animation
 
   // For Draggable Kalypso
   const [position, setPosition] = useState({ x: 0, y: 0 }); // Initial X will be calculated
@@ -54,7 +64,31 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
         x: window.innerWidth - KALYPSO_IMAGE_SIZE - SCREEN_PADDING - RIGHT_OFFSET, 
         y: window.innerHeight - KALYPSO_IMAGE_SIZE - SCREEN_PADDING 
     });
+    // Trigger icon animation
+    const timer = setTimeout(() => setIsIconAnimatedIn(true), 50); // Short delay for effect
+    return () => clearTimeout(timer);
   }, []);
+
+  // Play welcome audio on first whiteboard interaction
+  const playWelcomeAudioIfNotPlayed = () => {
+    if (!hasPlayedWelcomeAudio) {
+      const welcomeAudio = new Audio('/audio/welcome-back-evan.mp3');
+      welcomeAudio.play().catch(error => console.error("Error playing welcome audio:", error));
+      setHasPlayedWelcomeAudio(true);
+    }
+  };
+
+  const handleDismissWhiteboard = () => {
+    playWelcomeAudioIfNotPlayed();
+    setShowWhiteboardMessage(false);
+  };
+
+  const handleBlockActionWhiteboard = (action: WhiteboardAction) => {
+    playWelcomeAudioIfNotPlayed();
+    if (onWhiteboardAction) {
+      onWhiteboardAction(action);
+    }
+  };
 
   // Autofocus input when chat opens
   useEffect(() => {
@@ -67,6 +101,21 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
   useEffect(() => {
     setShowWhiteboardMessage(true);
   }, [pageContext]);
+
+  // Effect to control whiteboard appearance animation
+  useEffect(() => {
+    let animationTimer: NodeJS.Timeout;
+    if (isOpen && showWhiteboardMessage) {
+      // If whiteboard should be visible, start animation after a delay
+      animationTimer = setTimeout(() => {
+        setIsWhiteboardAnimatingIn(true);
+      }, 250); // Delay for pop-up, adjust as needed
+    } else {
+      // If chat is closed or whiteboard dismissed, hide immediately (animation out handled by CSS)
+      setIsWhiteboardAnimatingIn(false);
+    }
+    return () => clearTimeout(animationTimer);
+  }, [isOpen, showWhiteboardMessage]);
 
   // Effect to handle whiteboard position based on chat activity
   useEffect(() => {
@@ -92,6 +141,10 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
     // The current logic seems okay as long as chat UI stops propagation or this check is fine.
 
     if (!kalypsoRef.current) return;
+    // Check if the click is on the whiteboard area
+    if (target.closest('.whiteboard-container')) {
+        return; // Do not start dragging if click is on whiteboard
+    }
     setIsDragging(true);
     setDidDrag(false);
     dragStartCoords.current = { x: e.clientX, y: e.clientY };
@@ -166,25 +219,32 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
     audio.onended = () => setCurrentAudio(null);
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
+  // Main function to send message, used by both user input and automated calls
+  const internalHandleSendMessage = async (textToSend: string, currentThreadId: string | null, isHiddenPrompt: boolean = false) => {
+    if (!textToSend.trim()) return;
 
-    const userMessageId = `user-${Date.now()}`;
-    const newUserMessage: ChatMessage = { id: userMessageId, sender: 'user', text: message };
-    setChatHistory(prev => [...prev, newUserMessage]);
-    setMessage('');
+    if (!isHiddenPrompt) {
+      const userMessageId = `user-${Date.now()}`;
+      // For automated messages, we might not want to show them as 'user' messages,
+      // or we might want a different sender type. For now, keeping it simple.
+      // Alternatively, automated messages could skip adding to chatHistory if they are just prompts.
+      // For this use case, we DO want to show the AI's response based on the automated prompt.
+      const newUserMessage: ChatMessage = { id: userMessageId, sender: 'user', text: textToSend };
+      setChatHistory(prev => [...prev, newUserMessage]);
+      // No need to clear `message` state here as `textToSend` is passed directly
+    }
+    
     setIsLoading(true);
-
-    // Prepare AI message placeholder
     const aiMessageId = `ai-${Date.now()}`;
     const aiMessagePlaceholder: ChatMessage = { id: aiMessageId, sender: 'ai', text: '', isLoading: true };
+    // Add AI placeholder regardless of whether the prompt was hidden
     setChatHistory(prev => [...prev, aiMessagePlaceholder]);
 
     if (eventSourceRef.current) {
       eventSourceRef.current.close(); // Close any existing connection
     }
 
-    eventSourceRef.current = new EventSource(`/api/chat?message=${encodeURIComponent(newUserMessage.text)}${threadId ? `&threadId=${threadId}` : ''}&generateAudio=true`);
+    eventSourceRef.current = new EventSource(`/api/chat?message=${encodeURIComponent(textToSend)}${currentThreadId ? `&threadId=${currentThreadId}` : ''}&generateAudio=true`);
     // Note: For POST requests with EventSource, a common pattern is to make an initial POST to trigger the process,
     // and that POST returns a URL/ID that the EventSource then connects to via GET.
     // Here, for simplicity in a GET request, we're sending message data via query params.
@@ -203,8 +263,8 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: newUserMessage.text,
-          threadId: threadId,
+          message: textToSend,
+          threadId: currentThreadId,
           generateAudio: true,
           tutorName: tutorName,
           context: pageContext.ai
@@ -249,7 +309,7 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
                   setThreadId(jsonData.value);
                 } else if (jsonData.type === 'text_delta') {
                   setChatHistory(prev => prev.map(msg => 
-                    msg.id === aiMessageId ? { ...msg, text: msg.text + jsonData.value, isLoading: false } : msg
+                    msg.id === aiMessageId ? { ...msg, text: msg.text + jsonData.value, isLoading: true } : msg
                   ));
                 } else if (jsonData.type === 'audio_data') {
                   playAudio(jsonData.value);
@@ -289,11 +349,37 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
     }
   };
 
+  // Original handleSendMessage for user input
+  const handleSendMessage = () => {
+    internalHandleSendMessage(message, threadId, false);
+    setMessage(''); // Clear input after sending
+  };
+  
+  // Expose specific methods to the parent component via ref
+  useImperativeHandle(ref, () => ({
+    sendAutomatedMessage: (prompt: string, isHidden: boolean = true) => {
+      if (!isOpen) setIsOpen(true); // Open chat if closed
+      // We could choose to clear previous history or not.
+      // For this use case, let's clear history to make the new context prominent.
+      // setChatHistory([]); 
+      // setShowWhiteboardMessage(false); // Optionally hide whiteboard when auto-message starts convo
+      internalHandleSendMessage(prompt, threadId, isHidden);
+    },
+    clearChatHistory: () => {
+        setChatHistory([]);
+        setThreadId(null); // Also clear the threadId
+    }
+  }));
+
   return (
     <>
       {/* Backdrop for blur and darken effect when chat is open */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/20" aria-hidden="true"></div>
+        <div 
+          className="fixed inset-0 z-40 bg-black/20"
+          aria-hidden="true"
+          onClick={() => setIsOpen(false)}
+        ></div>
       )}
 
       {/* Main container for Kalypso: Draggable icon + Chat UI */}
@@ -301,7 +387,7 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
       {/* When open, the whole unit (icon + chat bubbles + input) conceptually moves together. */}
       <div 
         ref={kalypsoRef} 
-        className="fixed z-50 cursor-grab transition-all duration-100 ease-out"
+        className={`fixed z-50 cursor-grab transform transition-transform transition-opacity duration-300 ease-out ${isIconAnimatedIn ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
@@ -315,7 +401,11 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
           <>
             {showWhiteboardMessage && (
               <div
-                className="transition-all duration-500 ease-in-out" // Added for animation
+                className={`whiteboard-container transition-all duration-500 ease-in-out transform ${isWhiteboardAnimatingIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
+                onClick={(e) => { 
+                  playWelcomeAudioIfNotPlayed(); 
+                  e.stopPropagation(); // Prevent click from bubbling to Kalypso icon for toggle
+                }}
                 style={{
                   position: 'absolute',
                   bottom: `calc(100% + ${GAP_ABOVE_IMAGE}px + 100px)`, // Positioned above kalypsoRef (user modified this line)
@@ -327,13 +417,13 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
                 <KalypsoWhiteboardMessage
                   tutorName={tutorName}
                   pageContext={pageContext.whiteboard}
-                  onDismiss={() => setShowWhiteboardMessage(false)}
-                  onBlockAction={onWhiteboardAction}
+                  onDismiss={handleDismissWhiteboard}
+                  onBlockAction={handleBlockActionWhiteboard}
                 />
               </div>
             )}
             <div 
-                className="chat-ui-container absolute left-1/2 -translate-x-1/2 w-[350px] md:w-[400px] flex flex-col"
+                className={`chat-ui-container absolute left-1/2 -translate-x-1/2 w-[350px] md:w-[400px] flex flex-col origin-bottom transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-90 pointer-events-none'}`}
                 style={{
                     bottom: `calc(100% + ${GAP_ABOVE_IMAGE}px)`, // Position bottom of chat UI above the top of kalypsoRef
                     zIndex: 50 // Lower z-index than whiteboard if they could overlap
@@ -341,7 +431,7 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
                 onClick={(e) => e.stopPropagation()} // Prevent clicks inside from bubbling to drag or toggle logic
             >
               {/* Whiteboard message is now outside and above this container */}
-              <div ref={chatContainerRef} className="flex-1 p-1 space-y-3 overflow-y-auto max-h-96 no-scrollbar bg-transparent">
+              <div ref={chatContainerRef} className="flex-1 p-1 space-y-3 overflow-y-auto max-h-[768px] no-scrollbar bg-transparent">
                 {chatHistory.map((chat) => (
                   <div key={chat.id} className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
@@ -426,4 +516,7 @@ export default function KalypsoChat({ pageContext, tutorName, onWhiteboardAction
       </div>
     </>
   );
-}
+});
+
+KalypsoChat.displayName = 'KalypsoChat'; // Setting displayName for better debugging
+export default KalypsoChat;

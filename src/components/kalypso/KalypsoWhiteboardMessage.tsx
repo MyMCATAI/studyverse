@@ -11,11 +11,19 @@ interface KalypsoWhiteboardMessageProps {
 const KalypsoWhiteboardMessage: React.FC<KalypsoWhiteboardMessageProps> = ({ tutorName, pageContext, onDismiss, onBlockAction }) => {
   const { greeting, subtitle, mainDescription, blocks } = pageContext;
 
-  const handleActionClick = (action: WhiteboardAction) => {
-    if (action.type === 'link') {
-      window.location.href = action.value;
-    } else if (action.type === 'callback' && onBlockAction) {
-      onBlockAction(action);
+  const handleBlockClick = (action?: WhiteboardAction) => {
+    if (action && onBlockAction) {
+      // For link types, we could still handle them here or expect parent to do so via callback
+      if (action.type === 'link') {
+        window.location.href = action.value;
+      } else if (action.type === 'callback') {
+        onBlockAction(action);
+      }
+    } else if (action) {
+      // Fallback for link type if onBlockAction is not provided but action is a link
+      if (action.type === 'link') {
+        window.location.href = action.value;
+      }
     }
   };
 
@@ -45,17 +53,13 @@ const KalypsoWhiteboardMessage: React.FC<KalypsoWhiteboardMessageProps> = ({ tut
       {blocks && blocks.length > 0 && (
         <div className="space-y-3 mt-3 mb-4">
           {blocks.map((block) => (
-            <div key={block.id} className="p-3 bg-slate-100 rounded-lg shadow-sm border border-slate-200">
+            <div 
+              key={block.id} 
+              className={`p-3 bg-slate-100 rounded-lg shadow-sm border border-slate-200 transition-all duration-200 ease-in-out ${block.action ? 'cursor-pointer hover:bg-slate-200 hover:shadow-md' : ''}`}
+              onClick={() => handleBlockClick(block.action)}
+            >
               <h3 className="text-md font-semibold text-blue-600 mb-1">{block.title}</h3>
-              <p className="text-sm text-slate-600 mb-2 whitespace-pre-line">{block.description}</p>
-              {block.action && (
-                <button 
-                  onClick={() => handleActionClick(block.action!)}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
-                >
-                  {block.action.text}
-                </button>
-              )}
+              <p className="text-sm text-slate-600 mb-0 whitespace-pre-line">{block.description}</p>
             </div>
           ))}
         </div>

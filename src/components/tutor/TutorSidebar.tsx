@@ -1,87 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Users } from 'lucide-react';
-
-interface Student {
-  id: number;
-  name: string;
-  summary: string;
-  progress: number;
-  schedule: string;
-}
+import { Student } from '@/data/students'; // Import Student type
 
 interface TutorSidebarProps {
-  onStudentSelect: (student: Student | null) => void;
-  onDashboardToggle: (isActive: boolean) => void;
+  students: Student[];
+  onStudentSelect: (studentId: number | null) => void;
   isMobile?: boolean;
 }
 
-export default function TutorSidebar({ onStudentSelect, onDashboardToggle, isMobile = false }: TutorSidebarProps) {
-  // Enhanced student data with progress and schedule
-  const [students] = useState<Student[]>([
-    { 
-      id: 1, 
-      name: "Emma Thompson", 
-      summary: "3rd year medical student, focused on cardiology, struggling with ECG interpretation",
-      progress: 68,
-      schedule: "Next session: Thursday, 3:00 PM"
-    },
-    { 
-      id: 2, 
-      name: "James Wilson", 
-      summary: "2nd year student, needs help with neurology fundamentals and neuroanatomy",
-      progress: 42,
-      schedule: "Next session: Monday, 5:30 PM"
-    },
-    { 
-      id: 3, 
-      name: "Sarah Chen", 
-      summary: "4th year, preparing for pharmacology board exams, strong in theory",
-      progress: 85,
-      schedule: "Next session: Wednesday, 2:15 PM"
-    },
-    { 
-      id: 4, 
-      name: "Michael Rodriguez", 
-      summary: "1st year student, building foundational knowledge in anatomy and physiology",
-      progress: 31,
-      schedule: "Next session: Tuesday, 4:45 PM"
-    }
-  ]);
-
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+export default function TutorSidebar({ students, onStudentSelect, isMobile = false }: TutorSidebarProps) {
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   
-  // Handle student click to pass to parent component
   const handleStudentClick = (student: Student) => {
-    const newSelectedState = selectedStudent?.id === student.id ? null : student;
-    setSelectedStudent(newSelectedState);
-    onStudentSelect(newSelectedState);
-    
-    // Close dashboard when student is selected
-    if (newSelectedState) {
-      onDashboardToggle(false);
-    }
+    const newSelectedId = selectedStudentId === student.id ? null : student.id;
+    setSelectedStudentId(newSelectedId);
+    onStudentSelect(newSelectedId);
   };
   
-  // Handle home/dashboard button click
   const handleHomeClick = () => {
-    setSelectedStudent(null);
+    setSelectedStudentId(null);
     onStudentSelect(null);
-    onDashboardToggle(true);
   };
 
-  // Apply blur effect to main content when a student is selected or sidebar is active
   useEffect(() => {
     if (isMobile) {
       const mainContent = document.getElementById('main-content');
       if (mainContent) {
-        if (selectedStudent) {
+        if (selectedStudentId !== null) {
           mainContent.classList.add('content-blurred');
         } else {
           mainContent.classList.remove('content-blurred');
         }
       }
     }
-  }, [selectedStudent, isMobile]);
+  }, [selectedStudentId, isMobile]);
 
   return (
     <aside 
@@ -126,7 +78,7 @@ export default function TutorSidebar({ onStudentSelect, onDashboardToggle, isMob
               key={student.id} 
               className={`
                 rounded-lg cursor-pointer text-base transition-all duration-200
-                ${selectedStudent?.id === student.id 
+                ${selectedStudentId === student.id 
                   ? 'bg-hover-color text-text-color shadow-md' 
                   : 'student-item'
                 }
@@ -136,7 +88,7 @@ export default function TutorSidebar({ onStudentSelect, onDashboardToggle, isMob
               <div className="flex items-center gap-3 px-4 py-3">
                 <div className={`
                   w-10 h-10 rounded-full flex items-center justify-center text-base font-medium
-                  ${selectedStudent?.id === student.id 
+                  ${selectedStudentId === student.id 
                     ? 'bg-primary text-hover-text' 
                     : 'bg-card-accent text-text-color'
                   }
@@ -144,7 +96,7 @@ export default function TutorSidebar({ onStudentSelect, onDashboardToggle, isMob
                   {student.name.charAt(0)}
                 </div>
                 <div className="flex-grow">
-                  <div className={`font-medium ${selectedStudent?.id === student.id ? 'text-text-color' : ''}`}>
+                  <div className={`font-medium ${selectedStudentId === student.id ? 'text-text-color' : ''}`}>
                     {student.name}
                   </div>
                 </div>

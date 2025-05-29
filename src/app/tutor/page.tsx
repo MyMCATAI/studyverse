@@ -1,23 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import TutorSidebar from '@/components/tutor/TutorSidebar'
 import StudentActions from '@/components/tutor/StudentActions'
 import Dashboard from '@/components/tutor/Dashboard'
 import TutorNavbar from '@/components/tutor/TutorNavbar'
-import KalypsoChat from '@/components/kalypso/KalypsoChat'
+import KalypsoChat, { KalypsoChatRef } from '@/components/kalypso/KalypsoChat'
 import { Menu } from 'lucide-react'
-import { KalypsoPageContext, WhiteboardContext, WhiteboardBlock, WhiteboardAction } from '@/types/kalypso'
+import { KalypsoPageContext, WhiteboardBlock, WhiteboardAction } from '@/types/kalypso'
+import { Student, StudentHiddenInsights, STUDENTS_DATA } from '@/data/students'
 
 // Student and session types
-interface Student {
-  id: number;
-  name: string;
-  summary: string;
-  progress: number;
-  schedule: string;
-}
-
 interface Session {
   id: number;
   studentName: string;
@@ -63,113 +57,153 @@ const UPCOMING_SESSIONS_DATA: Session[] = [
   }
 ];
 
-const STUDENTS_DATA: Student[] = [
-  { 
-    id: 1, 
-    name: "Emma Thompson", 
-    summary: "3rd year medical student, focused on cardiology, struggling with ECG interpretation",
-    progress: 68,
-    schedule: "Next session: Thursday, 3:00 PM"
-  },
-  { 
-    id: 2, 
-    name: "James Wilson", 
-    summary: "2nd year student, needs help with neurology fundamentals and neuroanatomy",
-    progress: 42,
-    schedule: "Next session: Monday, 5:30 PM"
-  },
-  { 
-    id: 3, 
-    name: "Sarah Chen", 
-    summary: "4th year, preparing for pharmacology board exams, strong in theory",
-    progress: 85,
-    schedule: "Next session: Wednesday, 2:15 PM"
-  },
-  { 
-    id: 4, 
-    name: "Michael Rodriguez", 
-    summary: "1st year student, building foundational knowledge in anatomy and physiology",
-    progress: 31,
-    schedule: "Next session: Tuesday, 4:45 PM"
-  }
-];
-// --- END OF STATIC DATA DEFINITION ---
-
 export default function TutorPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const kalypsoChatRef = useRef<KalypsoChatRef>(null);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<null | Student>(null);
-  const [isDashboardActive, setIsDashboardActive] = useState(true);
+  const [focusedSessionId, setFocusedSessionId] = useState<number | null>(null);
+  
+  // Derive view state from URL path and query parameters
+  const { isDashboardActive, selectedStudentId } = useMemo(() => {
+    const studentIdParam = searchParams?.get('studentId') || null
+    if (pathname === '/tutor' && studentIdParam) {
+      const id = parseInt(studentIdParam);
+      return { isDashboardActive: false, selectedStudentId: isNaN(id) ? null : id };
+    }
+    // If on /tutor without studentId, or any other /tutor path (e.g. /tutor/some-other-page considered dashboard for now)
+    // or if not on a /tutor path at all (though this component is for /tutor)
+    return { isDashboardActive: true, selectedStudentId: null }; 
+  }, [pathname, searchParams]);
+
+  // Clear focused session if not on dashboard or if a student is selected via query param
+  useEffect(() => {
+    if (!isDashboardActive || selectedStudentId !== null) {
+        setFocusedSessionId(null);
+    }
+  }, [isDashboardActive, selectedStudentId]);
+
+  const selectedStudent = useMemo(() => {
+    if (selectedStudentId === null) return null;
+    return STUDENTS_DATA.find(s => s.id === selectedStudentId) || null;
+  }, [selectedStudentId]);
+
   const [kalypsoPageContext, setKalypsoPageContext] = useState<KalypsoPageContext>(() => {
     const now = new Date();
     return {
       whiteboard: {
         greeting: `Welcome back, Evan!`,
         subtitle: `${now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
-        mainDescription: "Loading your dashboard details...",
+        mainDescription: "Loading page details...",
         blocks: []
       },
       ai: "Evan is currently on the tutor platform."
     };
   });
 
-  // Use the stable references from outside the component
   const upcomingSessions = UPCOMING_SESSIONS_DATA;
   const students = STUDENTS_DATA;
 
-  // Update Kalypso's page context when view changes
+  // Update Kalypso's page context when view changes (derived from URL or focused session)
   useEffect(() => {
     const now = new Date();
     const formattedDate = `${now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
     if (isDashboardActive) {
-      const dashboardBlocks: WhiteboardBlock[] = upcomingSessions.slice(0, 3).map((session, index) => ({
-        id: `session-${session.id}`,
-        title: `Session: ${session.studentName} - ${session.topic}`,
-        description: `Scheduled for ${session.date} at ${session.time} (${session.duration}).\nThis is block ${index + 1} for the dashboard view.`,
-        action: {
-          text: 'View Session Details',
-          type: 'callback', // Or 'link' if you have a direct URL: e.g., `/tutor/sessions/${session.id}`
-          value: `session_details_${session.id}`
+      if (focusedSessionId !== null) {
+        const session = upcomingSessions.find(s => s.id === focusedSessionId);
+        if (session) {
+          const student = students.find(st => st.name === session.studentName);
+          // AI context now also includes a hint about hidden insights if they exist.
+          let aiContextForFocusedSession = student ? 
+            `Evan is focusing on a session with ${student.name} about ${session.topic}. Student Bio: ${student.bio}. Last session summary: ${student.lastSessionSummary || 'N/A'}. Upcoming session on ${session.date} at ${session.time}.`:
+            `Evan is focusing on a session about ${session.topic} scheduled on ${session.date} at ${session.time}. Student details not found.`;
+          if (student && student.hiddenInsights) {
+            aiContextForFocusedSession += ` Confidential insights are also available for ${student.name}. Ask Kalypso to provide an overview and suggest key areas for this session, considering all available information.`;
+          }
+
+          // Whiteboard block description remains the same (no hidden insights here)
+          const sessionDetailBlocks: WhiteboardBlock[] = [
+            {
+              id: `focused_session_${session.id}`,
+              title: `Details for Session: ${session.studentName} - ${session.topic}`,
+              description: `Date: ${session.date}\nTime: ${session.time}\nDuration: ${session.duration}\nStudent: ${session.studentName}\nTopic: ${session.topic}${student ? '\n\nStudent Insights (Public):\n' + student.bio + (student.lastSessionSummary ? '\n\nLast Session: ' + student.lastSessionSummary : '') : ''}`,
+              action: student ? { // Add action to navigate to student profile
+                text: 'View Student Profile', // Button text (won't be visible if whole block is clickable)
+                type: 'callback',
+                value: `navigate_student_profile_from_session_${student.id}`
+              } : undefined
+            },
+            { id: 'back_to_sessions_list', title: "View All Upcoming Sessions", description: "Return to the list of all your upcoming sessions.", action: { text: "Back to List", type: 'callback', value: 'clear_focused_session'}}
+          ];
+          setKalypsoPageContext({
+            whiteboard: { greeting: `Focusing on Session with ${session.studentName}`, subtitle: formattedDate, blocks: sessionDetailBlocks },
+            ai: aiContextForFocusedSession
+          });
+        } else {
+          setFocusedSessionId(null); // Session not found, clear focus
         }
-      }));
-      
-      if (upcomingSessions.length === 0) {
-        dashboardBlocks.push({
-            id: 'no-sessions',
-            title: "No Upcoming Sessions",
-            description: "Your schedule is clear for now! Consider planning new sessions or reviewing student progress.",
-            action: {
-                text: "Go to Calendar",
-                type: "callback", // or link to /calendar
-                value: "navigate_calendar"
-            }
+      } else {
+        // Default Dashboard View (list of sessions)
+        const dashboardBlocks: WhiteboardBlock[] = upcomingSessions.slice(0, 5).map((session, index) => ({
+          id: `session-${session.id}`,
+          title: `Session: ${session.studentName} - ${session.topic}`,
+          description: `Scheduled for ${session.date} at ${session.time} (${session.duration}).`,
+          action: {
+            text: 'View Session Details',
+            type: 'callback',
+            value: `session_details_${session.id}`
+          }
+        }));
+        
+        if (upcomingSessions.length === 0) {
+          dashboardBlocks.push({
+              id: 'no-sessions',
+              title: "No Upcoming Sessions",
+              description: "Your schedule is clear for now! Consider planning new sessions or reviewing student progress.",
+              action: { text: "Go to Calendar", type: "callback", value: "navigate_calendar" }
+          });
+        }
+
+        setKalypsoPageContext({
+          whiteboard: {
+            greeting: `Welcome back, Evan!`,
+            subtitle: formattedDate,
+            mainDescription: `You have ${upcomingSessions.length} upcoming session${upcomingSessions.length !== 1 ? 's' : ''} today. Here are the next few:`, 
+            blocks: dashboardBlocks,
+          },
+          ai: `Evan is viewing the main tutor dashboard. Date: ${formattedDate}. There are ${upcomingSessions.length} upcoming sessions. Key sessions: ${upcomingSessions.slice(0, 2).map(s => `${s.studentName} - ${s.topic}`).join('; ')}. Evan can see an overview of students and schedules.`
         });
       }
-
-      setKalypsoPageContext({
-        whiteboard: {
-          greeting: `Welcome back, Evan!`,
-          subtitle: formattedDate,
-          mainDescription: `You have ${upcomingSessions.length} upcoming session${upcomingSessions.length !== 1 ? 's' : ''}. Here are the next few:`, 
-          blocks: dashboardBlocks,
-        },
-        ai: `Evan is viewing the main tutor dashboard. Date: ${formattedDate}. There are ${upcomingSessions.length} upcoming sessions. Key sessions: ${upcomingSessions.slice(0, 2).map(s => `${s.studentName} - ${s.topic}`).join('; ')}. Evan can see an overview of students and schedules.`
-      });
-    } else if (selectedStudent) {
+    } else if (selectedStudent) { // Now uses derived selectedStudent
       const studentBlocks: WhiteboardBlock[] = [
         {
           id: 'student-summary',
           title: `${selectedStudent.name}'s Current Focus`,
           description: selectedStudent.summary,
-          action: { text: 'View Full Profile', type: 'callback', value: `navigate_student_${selectedStudent.id}` }
+          action: { 
+            text: 'Get Details on Focus', 
+            type: 'callback', 
+            value: `student_focus_details_${selectedStudent.id}` 
+          }
         },
         {
           id: 'student-progress',
           title: 'Progress Report',
           description: `Current progress is at ${selectedStudent.progress}%. Next session: ${selectedStudent.schedule}.`,
-          action: { text: 'Update Progress', type: 'callback', value: `update_progress_${selectedStudent.id}` }
+          action: { 
+            text: 'Get Detailed Progress', 
+            type: 'callback', 
+            value: `student_progress_details_${selectedStudent.id}` 
+          }
         }
       ];
+      let aiContextForStudentProfile = `Evan is viewing the detailed profile for student: ${selectedStudent.name}. Date: ${formattedDate}. Summary: ${selectedStudent.summary}. Progress: ${selectedStudent.progress}%. Bio: ${selectedStudent.bio}. Last Session: ${selectedStudent.lastSessionSummary || 'N/A'}. Evan can click whiteboard blocks to get detailed AI insights on focus or progress.`;
+      if (selectedStudent.hiddenInsights) {
+        aiContextForStudentProfile += ` Confidential insights for ${selectedStudent.name} are also available and will be used by the AI.`;
+      }
       setKalypsoPageContext({
         whiteboard: {
           greeting: `Viewing ${selectedStudent.name}'s Profile`,
@@ -177,22 +211,23 @@ export default function TutorPage() {
           mainDescription: `Details for ${selectedStudent.name}:`,
           blocks: studentBlocks,
         },
-        ai: `Evan is viewing the detailed profile for student: ${selectedStudent.name}. Date: ${formattedDate}. Summary: ${selectedStudent.summary}. Progress: ${selectedStudent.progress}%. Next session: ${selectedStudent.schedule}. Evan might be looking to understand this student's needs, plan a session, or update their information.`
+        ai: aiContextForStudentProfile
       });
     } else {
+      // This case handles when path is not /tutor and not a valid /tutor/student/:id
+      // Or if selectedStudentId from URL doesn't match any student
       setKalypsoPageContext({
         whiteboard: {
-          greeting: "Tutor Platform",
+          greeting: "Page Not Found",
           subtitle: formattedDate,
-          mainDescription: "Please select a student or navigate to the dashboard.",
-          blocks: []
+          mainDescription: "The requested student or page could not be found. Please check the URL or navigate using the sidebar.",
+          blocks: [{id: 'back-to-dash', title: 'Return to Dashboard', description: '', action: {text: 'Go to Dashboard', type: 'callback', value: 'navigate_dashboard'}}]
         },
-        ai: "Evan is on the tutor page, but no specific view (dashboard or student) is active. Date: " + formattedDate
+        ai: "Evan is on an unrecognized tutor page URL. Date: " + formattedDate
       });
     }
-  }, [isDashboardActive, selectedStudent, upcomingSessions]); // Add upcomingSessions to dependencies
+  }, [isDashboardActive, selectedStudent, upcomingSessions, focusedSessionId, students]); // Added `students` to dependency array as it's used for AI context
 
-  // Apply blur effect to main content when sidebar is open
   useEffect(() => {
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
@@ -208,13 +243,40 @@ export default function TutorPage() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Handle navigation to student profile from Dashboard
-  const handleNavigateToStudent = (studentName: string) => {
-    const student = students.find(s => s.name === studentName);
-    if (student) {
-      setSelectedStudent(student);
-      setIsDashboardActive(false);
+  // Navigate to student profile page (used by Dashboard component)
+  const handleNavigateToStudent = useCallback((studentName: string) => {
+    const studentToNav = students.find(s => s.name === studentName);
+    if (studentToNav) {
+      router.push(`/tutor?studentId=${studentToNav.id}`);
     }
+  }, [router, students]);
+
+  // Helper function to format hidden insights for the AI prompt
+  const formatHiddenInsightsForPrompt = (insights: StudentHiddenInsights): string => {
+    let insightsText = "\n\n--- Confidential Insights for AI Consideration ---";
+    if (insights.recentCommunications && insights.recentCommunications.length > 0) {
+      insightsText += "\nRecent Communications:";
+      insights.recentCommunications.forEach(comm => { insightsText += `\n- ${comm}`; });
+    }
+    if (insights.performanceMetrics) {
+      insightsText += "\nPerformance Metrics:";
+      if (insights.performanceMetrics.latestMCATScore) {
+        const mcat = insights.performanceMetrics.latestMCATScore;
+        insightsText += `\n  - Latest MCAT Score: ${mcat.score} (on ${mcat.date})${mcat.trend ? `, Trend: ${mcat.trend}` : ''}`;
+      }
+      if (insights.performanceMetrics.strengths && insights.performanceMetrics.strengths.length > 0) {
+        insightsText += `\n  - Strengths: ${insights.performanceMetrics.strengths.join(', ')}`;
+      }
+      if (insights.performanceMetrics.areasForImprovement && insights.performanceMetrics.areasForImprovement.length > 0) {
+        insightsText += `\n  - Areas for Improvement: ${insights.performanceMetrics.areasForImprovement.join(', ')}`;
+      }
+    }
+    if (insights.personalNotes && insights.personalNotes.length > 0) {
+      insightsText += "\nPersonal Notes:";
+      insights.personalNotes.forEach(note => { insightsText += `\n- ${note}`; });
+    }
+    insightsText += "\n---------------------------------------------";
+    return insightsText;
   };
 
   // Callback handler for whiteboard actions
@@ -222,27 +284,82 @@ export default function TutorPage() {
     console.log("Whiteboard action triggered:", action);
     if (action.type === 'callback') {
       if (action.value.startsWith('session_details_')) {
-        const sessionId = action.value.replace('session_details_', '');
-        // TODO: Implement navigation or modal display for session details
-        alert(`Placeholder: View details for session ID: ${sessionId}`);
-      } else if (action.value.startsWith('navigate_student_')) {
-        const studentId = parseInt(action.value.replace('navigate_student_', ''));
-        const student = students.find(s => s.id === studentId);
-        if (student) {
-            setSelectedStudent(student);
-            setIsDashboardActive(false);
+        const sessionId = parseInt(action.value.replace('session_details_', ''));
+        setFocusedSessionId(sessionId);
+        const session = UPCOMING_SESSIONS_DATA.find(s => s.id === sessionId);
+        const student = session ? STUDENTS_DATA.find(st => st.name === session.studentName) : null;
+        if (session && student && kalypsoChatRef.current) {
+          kalypsoChatRef.current.clearChatHistory();
+          let prompt = `I'm about to have a session with ${student.name} on ${session.topic} (${session.date} at ${session.time}). 
+Background on ${student.name}: ${student.bio}. 
+Last session covered: ${student.lastSessionSummary || 'N/A'}.`;
+          if (student.hiddenInsights) {
+            prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
+          }
+          prompt += `\n\nFor the upcoming session on ${session.topic}, what are the key focus areas or discussion points based on ALL available information? Provide a CONCISE, plain text response. Do NOT use markdown.`;
+          kalypsoChatRef.current.sendAutomatedMessage(prompt);
+        }
+      } else if (action.value === 'clear_focused_session') {
+        setFocusedSessionId(null);
+      } else if (action.value.startsWith('navigate_student_profile_from_session_')) {
+        const studentId = parseInt(action.value.replace('navigate_student_profile_from_session_', ''));
+        router.push(`/tutor?studentId=${studentId}`);
+        setFocusedSessionId(null);
+      } else if (action.value.startsWith('navigate_student_profile_')) {
+        const studentId = parseInt(action.value.replace('navigate_student_profile_', ''));
+        router.push(`/tutor?studentId=${studentId}`);
+      } else if (action.value.startsWith('student_focus_details_')) {
+        const studentId = parseInt(action.value.replace('student_focus_details_', ''));
+        const student = STUDENTS_DATA.find(s => s.id === studentId);
+        if (student && kalypsoChatRef.current) {
+          kalypsoChatRef.current.clearChatHistory();
+          let prompt = `Tell me more about ${student.name}'s current academic focus. 
+Key info: ${student.summary}. 
+Bio: ${student.bio}. 
+Last session: ${student.lastSessionSummary || 'N/A'}.`;
+          if (student.hiddenInsights) {
+            prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
+          }
+          prompt += `\n\nBased on all this, what are the most critical areas ${student.name} is working on, any specific challenges, and recent points of discussion or concern? CONCISE, plain text response. No markdown.`;
+          kalypsoChatRef.current.sendAutomatedMessage(prompt);
+        }
+      } else if (action.value.startsWith('student_progress_details_')) {
+        const studentId = parseInt(action.value.replace('student_progress_details_', ''));
+        const student = STUDENTS_DATA.find(s => s.id === studentId);
+        if (student && kalypsoChatRef.current) {
+          kalypsoChatRef.current.clearChatHistory();
+          let prompt = `Provide a detailed progress report for ${student.name}. 
+Overall progress: ${student.progress}%. 
+Next session: ${student.schedule}. 
+Last session summary: ${student.lastSessionSummary || 'N/A'}.`;
+          if (student.hiddenInsights) {
+            prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
+          }
+          prompt += `\n\nSynthesize this into a progress overview. What are current trends, key strengths, and areas needing urgent attention? CONCISE, plain text response. No markdown.`;
+          kalypsoChatRef.current.sendAutomatedMessage(prompt);
         }
       } else if (action.value === 'navigate_calendar') {
-        // TODO: Implement navigation to a calendar page if it exists
-        alert("Placeholder: Navigate to Calendar page");
-      } else if (action.value.startsWith('update_progress_')) {
-        const studentId = action.value.replace('update_progress_', '');
-        alert(`Placeholder: Update progress for student ID: ${studentId}`);
+        alert("Placeholder: Navigate to Calendar page (e.g., /calendar)");
+        // router.push('/calendar'); // Example navigation
+      } else if (action.value === 'navigate_dashboard'){
+        router.push('/tutor');
       }
-      // Add more callback handling as needed
     }
-    // Link actions are handled directly by KalypsoWhiteboardMessage
-  }, [students]); // Ensure `students` is in dependency array if used like this
+  }, [router, students, kalypsoChatRef]); // Added kalypsoChatRef to dependencies
+  
+  // Functions to be passed to TutorSidebar for navigation
+  const navigateToDashboard = useCallback(() => {
+    setFocusedSessionId(null); // Clear focused session when navigating to dashboard via sidebar
+    router.push('/tutor');
+  }, [router]);
+  const navigateToStudentInSidebar = useCallback((studentId: number | null) => {
+    setFocusedSessionId(null); 
+    if (studentId !== null) {
+        router.push(`/tutor?studentId=${studentId}`); 
+    } else {
+        router.push('/tutor'); // Navigate to dashboard if studentId is null (deselect)
+    }
+  }, [router]);
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -284,8 +401,8 @@ export default function TutorPage() {
         >
           <div className="relative h-full z-10">
             <TutorSidebar 
-              onStudentSelect={setSelectedStudent}
-              onDashboardToggle={setIsDashboardActive}
+              students={students}
+              onStudentSelect={navigateToStudentInSidebar}
               isMobile={true}
             />
           </div>
@@ -299,15 +416,24 @@ export default function TutorPage() {
             sessions={upcomingSessions} 
             onNavigateToStudent={handleNavigateToStudent}
           />
-        ) : (
+        ) : selectedStudent ? (
           <StudentActions 
             selectedStudent={selectedStudent}
           />
+        ) : (
+          <div className="p-6 text-center">
+            <h1 className="text-xl">Student not found</h1>
+            <p>The selected student could not be found. Please select a student from the sidebar or return to the dashboard.</p>
+            <button onClick={navigateToDashboard} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Go to Dashboard
+            </button>
+          </div>
         )}
       </div>
 
       {/* Kalypso Chat Widget - Bottom Right */}
       <KalypsoChat 
+        ref={kalypsoChatRef}
         pageContext={kalypsoPageContext} 
         tutorName="Evan" 
         onWhiteboardAction={handleWhiteboardAction}

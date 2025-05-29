@@ -5,14 +5,7 @@ import DesignSessionView from './views/DesignSessionView';
 import ReportView from './views/ReportView';
 import ResourcesView from './views/ResourcesView';
 import OverviewView from './views/OverviewView';
-
-interface Student {
-  id: number;
-  name: string;
-  summary: string;
-  progress: number;
-  schedule: string;
-}
+import { Student } from '@/data/students';
 
 type ActiveView = 'overview' | 'design' | 'report' | 'resources';
 
