@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ElevenLabsClient } from "elevenlabs";
-import { getTutorBaseSystemPrompt, getPageContextSystemPrompt } from "../../../../lib/prompts";
+import { getTutorBaseSystemPrompt, getPageContextSystemPrompt } from "../../../lib/prompts";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -61,8 +61,16 @@ export async function POST(req: Request) {
     let finalSystemInstructions = baseSystemInstructions;
 
     if (pageSpecificContext && typeof pageSpecificContext === 'string' && pageSpecificContext.trim() !== '') {
-      finalSystemInstructions = getPageContextSystemPrompt(baseSystemInstructions, pageSpecificContext);
+      finalSystemInstructions = getPageContextSystemPrompt(baseSystemInstructions, pageSpecificContext, tutorName);
     }
+
+    // Log the instructions and user message before sending to OpenAI
+    console.log("--- OpenAI API Call Details ---");
+    console.log("Final System Instructions:", finalSystemInstructions);
+    console.log("Full User Message to Thread:", fullUserMessage);
+    console.log("Thread ID:", currentThreadId);
+    console.log("Assistant ID:", currentAssistantId);
+    console.log("-------------------------------");
 
     await openai.beta.threads.messages.create(currentThreadId, {
       role: "user",

@@ -13,11 +13,22 @@ If you are unsure about something, it's better to state that clearly than to pro
 };
 
 // Example of how you might add page-specific context later
-export const getPageContextSystemPrompt = (basePrompt: string, pageContext: string): string => {
+export const getPageContextSystemPrompt = (basePrompt: string, pageContext: string, tutorName: string = "Evan"): string => {
+  const now = new Date();
+  const timeZone = 'America/New_York'; // IANA time zone for EST/EDT
+
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long', timeZone });
+  const date = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone });
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone });
+
+  const dateTimeInfo = `Today is ${dayOfWeek}, ${date}. The current time is ${time} (Eastern Time).`;
+
   return (
 `${basePrompt}
 
-Context for your current interaction with ${tutorName}: // This ${tutorName} would need to be passed or re-inserted
+${dateTimeInfo}
+
+Context for your current interaction with ${tutorName}:
 ${pageContext}`
   );
 };

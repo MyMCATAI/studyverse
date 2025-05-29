@@ -1,50 +1,127 @@
 # Agentic AI Demo Plan
 
-## Current State
+## Overall Demo Vision (Multi-Perspective)
+
+The long-term goal is to showcase Kalypso's capabilities across three key user perspectives: the Student, the Tutor, and the Admin. This particular plan and current development phase focuses on the **Tutor Perspective**. The Student view is handled in a separate project, and the Admin perspective will be addressed last.
+
+## Current State (Tutor Perspective)
 
 *   Application features a tutor dashboard displaying student information (e.g., MCAT scores, content mastery).
-*   A basic version of Kalypso (AI mascot) is implemented with a chat interface, capable of text and audio responses, and uses a streaming API.
-*   Kalypso's visual asset (`kalypsoend.gif`) is available.
+*   Kalypso (AI mascot) is implemented as a draggable GIF with a chat interface (speech bubbles) appearing above the icon. It supports streaming text and audio responses and is aware of the tutor's name ("Evan") and the current date/time (EST).
+*   A basic frontend context system provides Kalypso with information about whether Evan is viewing the main dashboard or a specific student profile.
 
-## Revised Demo Goals
+## Revised Demo Goals (Tutor Perspective Focus)
 
-*   **Elevate Kalypso to a central, interactive AI assistant**, moving beyond a simple chat pop-up.
-*   Demonstrate Kalypso's ability to **understand and interact with the on-screen context** (e.g., the student dashboard).
-*   Showcase a more natural and intuitive way for tutors to **collaborate with Kalypso** on tasks like data interpretation, session planning, and identifying student needs.
-*   The initial demo will still primarily use **hardcoded or easily mockable contextual responses** to focus on the UI/UX of this agentic interaction.
+*   **Elevate Kalypso to a central, fun, and engaging AI partner** that actively assists Evan with their tutoring tasks.
+*   **Deeply integrate Kalypso with the Tutor Dashboard UI:** Kalypso should react to Evan's interactions with specific data elements on the page, providing contextual insights and actionable advice, making AI feel like a core part of the workflow.
+*   **Showcase "Wow Factors" for the Tutor:**
+    *   **Effortless Progress Summaries:** Kalypso can summarize a student's progress and key changes since their last meeting with Evan.
+    *   **Insight into Student Activity (Mocked):** Kalypso can present simulated "messages from students," a recap of content they've recently reviewed, or questions they've had, giving Evan a richer understanding of student engagement outside of sessions.
+    *   **Click-Driven Contextual Insights:** Specific data points on the dashboard (e.g., tutoring sessions remaining, MCAT score, consistency metrics) become interactive. Clicking them prompts Kalypso to provide a relevant summary or recommendation.
+*   The demo will use **hardcoded or easily mockable responses triggered by specific UI interactions** to simulate Kalypso's deep contextual understanding and maintain focus on the UI/UX and agentic feel.
 
-## Enhancing Kalypso's Interaction - Planning Phase
+## Enhancing Kalypso's Interaction - Tutor Perspective Detailed Scenarios
 
-This section outlines ideas for making Kalypso more agentic and central to the user experience, particularly on a data-rich page like the student dashboard.
+This section details how Kalypso will interact with Evan based on the new demo notes, focusing on making dashboard elements "clickable" to trigger contextual AI responses.
 
-1.  **Kalypso's Presence & Activation:**
-    *   **Current:** Kalypso is a clickable GIF in the bottom-right corner, opening a separate chat window.
-    *   **Proposed Vision:** Kalypso remains visually present (perhaps slightly smaller or less obtrusive initially in a corner) but activation leads to a more integrated experience.
-    *   **Activation Idea:** Clicking Kalypso could transition the UI into an "AI Interaction Mode."
+1.  **Kalypso's Core Interaction Model:**
+    *   Kalypso's GIF remains draggable.
+    *   When a specifically designated UI element on the dashboard is clicked (e.g., "Tutoring Sessions Left" widget), Kalypso's chat interface (speech bubbles above the GIF) will activate/appear.
+    *   Kalypso will deliver a pre-scripted, context-specific message related to the clicked element.
+    *   This interaction should feel like Kalypso is directly commenting on or summarizing the information Evan just clicked on.
 
-2.  **"AI Interaction Mode" - Taking Center Stage:**
-    *   **Concept:** Instead of a small chat box, Kalypso takes a more prominent role, potentially overlaying or reflowing parts of the UI to create a dedicated interaction space.
-    *   **Visuals:** Kalypso's avatar could become larger, and associated UI elements (like speech bubbles or information cards) would appear in a more central area of the screen.
-    *   **Contextual Awareness (Demo):**
-        *   When activated on the student dashboard (e.g., "Emma Thompson's" page):
-            *   Kalypso could greet the tutor and say something like, "I see we're looking at Emma Thompson's progress. What would you like to focus on?"
-            *   **Interactive Highlighting:** Kalypso could visually highlight sections of the dashboard (e.g., "Latest MCAT Score" or "AAMC Content Mastery") as it discusses them or as the tutor asks about them. (For the demo, these highlights and corresponding text would be pre-scripted).
-            *   **Summarization (Demo):** Tutor asks, "Kalypso, summarize Emma's recent performance." Kalypso provides a concise summary (hardcoded) and perhaps visually draws attention to the relevant data points on the screen.
-            *   **Action Suggestions (Demo):** Based on the (mocked) understanding of Emma's data (e.g., low CARS score), Kalypso could suggest, "Emma seems to be struggling with CARS. Would you like to design a session focusing on CARS practice or find relevant resources?" Clicking these suggestions would (for the demo) lead to a placeholder action or a simple confirmation message.
+2.  **Clickable Dashboard Elements & Kalypso's Responses (Examples based on notes):**
+    *   **Element: "Amount of Tutoring Sessions Left" (e.g., for student Emma Thompson)**
+        *   **Evan Clicks:** The widget showing "5 sessions left."
+        *   **Kalypso Appears & Says (Mocked):** "Hi Evan, I see Emma only has 5 tutoring sessions left. She hasn't improved significantly in CARS recently. When you next speak with her, perhaps suggest she consider purchasing additional tutoring focused on that area?"
+    *   **Element: "Latest MCAT Score" (e.g., shows 508, with a 5pt increase)**
+        *   **Evan Clicks:** The score display.
+        *   **Kalypso Appears & Says (Mocked):** "That's a nice 5-point jump for Emma on her latest MCAT, Evan! This brings her to 508. It looks like the recent focus on [Specific Topic] paid off. Keep encouraging her!"
+    *   **Element: "Total Number of Coins Earned" (Gamification metric)**
+        *   **Evan Clicks:** The coin display.
+        *   **Kalypso Appears & Says (Mocked):** "Evan, Emma has earned a total of [X] coins! This shows good engagement with her study materials. You could mention this to acknowledge her efforts."
+    *   **Element: "Consistency Score" (e.g., 76%)**
+        *   **Evan Clicks:** The consistency score.
+        *   **Kalypso Appears & Says (Mocked):** "Evan, Emma's consistency is at 76%. While that's pretty good, reminding her about the importance of regular CARS practice, as noted in her improvement areas, could be beneficial."
+    *   **Element: "Burnout Score/Indicator"**
+        *   **Evan Clicks:** The burnout indicator.
+        *   **Kalypso Appears & Says (Mocked):** "Hmm, it looks like Emma's burnout risk is [Low/Medium/High]. If it's medium or high, it might be a good idea to check in on her study-life balance during your next session, Evan."
 
-3.  **Interaction Flow & UI Elements:**
-    *   **Input:** The tutor could still use text input, but voice input (even if just placeholder for demo) should be considered for a more natural feel.
-    *   **Output - Kalypso's Communication Style:**
-        *   Her avatar's animation/expression.
-        *   **Chat Interface:** Instead of a fixed chatbox, the conversation will appear as a series of **cartoon-style speech bubbles** anchored near Kalypso's avatar. The background of this "chat area" should be transparent or semi-transparent to maintain visibility of the underlying page content.
-        *   Visual cues on the existing dashboard (highlights, arrows, temporary overlays when Kalypso is discussing specific data).
-    *   **Movability:** Kalypso's avatar (the GIF) should be **draggable**, allowing the tutor to reposition her and the anchored speech bubbles on the screen.
-    *   **Exiting Interaction Mode:** A clear way to return to the standard dashboard view or minimize Kalypso's active interaction.
+3.  **AI Flourishes - Integrating Simulated Student Insights (Mocked for Demo):**
+    *   These could be triggered by a general "What's new with Emma?" query to Kalypso when viewing Emma's profile, or specific buttons/icons.
+    *   **"Message from Student (Simulated)":**
+        *   **Kalypso Presents:** "Evan, I have a quick update from Emma. She sent a message saying: 'I finally understood the kidney's countercurrent mechanism after our last session! Still a bit shaky on diuretics though.' This might be a good point to review next time."
+    *   **"Recent Recap of Content Reviewed (Simulated)":**
+        *   **Kalypso Presents:** "Looking at Emma's activity this week, Evan, she spent significant time on cardiology topics, particularly ECG interpretation and heart failure pathophysiology. She also completed practice questions on endocrine pharmacology."
+    *   **"Recent Recap of Questions Asked (Simulated)":**
+        *   **Kalypso Presents:** "Evan, some questions Emma flagged this week include: 'What are the key differences between Type 1 and Type 2 MI?' and 'How do loop diuretics affect potassium levels?' These could be good discussion starters."
 
-4.  **Technical Considerations for Demo (Frontend-Focus):**
-    *   This is primarily a **UI/UX design and frontend implementation challenge** for the demo.
-    *   Focus on creating a smooth and believable *illusion* of agentic behavior with pre-defined conversational paths and contextual triggers.
-    *   The backend chat API (`/api/chat`) can still be used for message processing, but the frontend will do more heavy lifting in terms of interpreting a limited set of commands/responses to trigger UI changes.
+4.  **UI/UX Enhancements for Agentic Feel:**
+    *   The frontend needs to be spruced up to feel modern and engaging.
+    *   Kalypso's interactions (appearing, delivering messages) should feel smooth and integrated, not like a separate, disjointed chat window for these specific contextual prompts.
+    *   The current draggable chat bubble system is a good base, but for these direct data point interactions, the connection between the clicked element and Kalypso's response should be visually clear.
+
+## Next Development Steps (Tutor Perspective):
+
+1.  **Refine Frontend Context System:**
+    *   **Identify specific, clickable UI elements** on the `Dashboard.tsx` and `StudentActions.tsx` (or similar student detail view) that will trigger Kalypso.
+    *   Implement logic so that clicking these elements updates a more granular `kalypsoTriggerContext` (e.g., "clicked_sessions_left_for_emma", "clicked_mcat_score_for_emma").
+    *   `KalypsoChat.tsx` will use this trigger context (along with the broader page context) to select the appropriate hardcoded message for Kalypso to deliver.
+2.  **Implement Click-to-Summarize UI:**
+    *   Modify `KalypsoChat.tsx` so that when a trigger context is received due to a click:
+        *   `isOpen` is set to true (if not already).
+        *   The pre-scripted message for that trigger is displayed immediately (not requiring Evan to type anything).
+        *   The standard chat input might be less relevant for these instant summaries, or could be used for follow-up questions.
+3.  **Content - Mocked Responses:**
+    *   Write the specific (hardcoded) text and an audio script (if generating audio for these) for each of the defined clickable interactions and AI flourishes.
+4.  **Define and Integrate Richer Student Context for AI (Technical Notes):**
+    *   **Goal:** Provide Kalypso with more comprehensive background information about the student Evan is currently focused on, to enable more informed and context-aware responses beyond the immediate page/click context.
+    *   **Student Data Model (Mocked/Hardcoded for Demo):**
+        *   For each demo student (e.g., "Emma Thompson"), we will define a data structure.
+        *   **Basic Info:**
+            *   `studentName`: String (e.g., "Emma Thompson")
+            *   `studentBio`: String (e.g., "A dedicated pre-med student, currently balancing MCAT prep with volunteer work at a local clinic. Strong in sciences but looking to improve CARS consistency.")
+            *   `studentEmail`: String (e.g., "emma.thompson@example.com")
+        *   **MCAT Scores:**
+            *   `mcatScores`: Array of objects, similar to `testHistory` in `OverviewView.tsx`. Each object should include:
+                *   `testName`: String (e.g., "AAMC FL 1", "CP Section Bank")
+                *   `date`: String (e.g., "2023-10-02")
+                *   `score`: Number or String (e.g., 508, "72%")
+                *   `breakdown`: String (e.g., "126/125/127/130", "72%")
+        *   **Recent Calendar/Activity Log (Simplified for Demo):**
+            *   `calendarActivities`: Array of strings, representing key activities or study topics for the current/upcoming week.
+                *   Example for "Emma Thompson":
+                    *   "Reviewing Kidney Physiology - Countercurrent Mechanism"
+                    *   "Practice Set: Diuretics and Renal Function"
+                    *   "Scheduled: CARS Passage Practice - Mon, Wed, Fri"
+                    *   "Meeting with Evan: Focus on CARS strategy - Thursday"
+                    *   "Volunteering at Clinic - Tuesday afternoon"
+    *   **Data Flow & AI Integration:**
+        *   When Evan selects a student or is viewing a student-specific page, the frontend will retrieve (or use hardcoded) this comprehensive student data object.
+        *   This data object will be stringified and passed to the `/api/chat` endpoint as part of the `pageSpecificContext` or a new dedicated field (e.g., `studentDataPayload`).
+        *   The backend API route (`/api/chat/route.ts`) will prepend this detailed student information to the system prompt or the user's message, ensuring the AI has this broader context when generating responses.
+            *   Example snippet for `getPageContextSystemPrompt` or similar logic:
+                \`\`\`
+                Current Student: ${studentData.studentName}
+                Bio: ${studentData.studentBio}
+                Recent MCAT Scores:
+                ${studentData.mcatScores.map(s => `- ${s.testName}: ${s.score} (on ${s.date})`).join('\\n')}
+                This Week's Focus for ${studentData.studentName}:
+                ${studentData.calendarActivities.map(act => `- ${act}`).join('\\n')}
+
+                Current Date/Time (EST): ${currentDateStr}
+                Tutor: You are assisting ${tutorName}.
+                Page Context: ${pageSpecificContextFromFrontend}
+                ---
+                Remember to use ${tutorName}'s name.
+                \`\`\`
+        *   This allows Kalypso to answer questions like "What is Emma working on this week?" or "Summarize Emma's recent MCAT progress" with more specific, (mocked) data-driven replies.
+        *   For the click-triggered summaries, this richer context will also be available, potentially allowing for even more nuanced hardcoded responses.
+
+## Future Considerations (Post-Demo - Tutor Perspective)
+
+*   Transition from hardcoded responses to dynamic AI generation based on real data and more sophisticated context understanding.
+*   Allow Kalypso to perform actions based on suggestions (e.g., "Would you like to add a session on CARS for Emma?" -> Yes -> Kalypso opens a pre-filled session planner).
 
 ## Initial Steps (Refined)
 

@@ -18,10 +18,9 @@ interface KalypsoChatProps {
 }
 
 const KALYPSO_IMAGE_SIZE = 200; // Define size for reuse
-const SCREEN_PADDING = 20; // Define padding from screen edges
-const CHAT_UI_WIDTH_MD = 400;
-const CHAT_UI_WIDTH_SM = 350;
+const SCREEN_PADDING = 10; // Define padding from screen edge
 const GAP_ABOVE_IMAGE = 8; // Space between top of image and bottom of chat UI
+const RIGHT_OFFSET = 100; // Additional offset from right edge
 
 export default function KalypsoChat({ pageContext, tutorName }: KalypsoChatProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +44,7 @@ export default function KalypsoChat({ pageContext, tutorName }: KalypsoChatProps
   useEffect(() => {
     // Set initial Y position to be bottom-right after component mounts and window is available
     setPosition({ 
-        x: window.innerWidth - KALYPSO_IMAGE_SIZE - SCREEN_PADDING, 
+        x: window.innerWidth - KALYPSO_IMAGE_SIZE - SCREEN_PADDING - RIGHT_OFFSET, 
         y: window.innerHeight - KALYPSO_IMAGE_SIZE - SCREEN_PADDING 
     });
   }, []);
@@ -371,44 +370,3 @@ export default function KalypsoChat({ pageContext, tutorName }: KalypsoChatProps
     </div>
   );
 }
-
-// Basic speech bubble CSS (add to your global.css or a relevant CSS module)
-/*
-.speech-bubble-user {
-  position: relative;
-  border-radius: .4em;
-}
-.speech-bubble-user::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border: 10px solid transparent;
-  border-left-color: #10b981; // Match user bubble bg color
-  border-right: 0;
-  border-bottom: 0;
-  margin-top: -5px;
-  margin-right: -10px;
-}
-
-.speech-bubble-ai {
-  position: relative;
-  border-radius: .4em;
-}
-.speech-bubble-ai::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border: 10px solid transparent;
-  border-right-color: #e5e7eb; // Match AI bubble bg color
-  border-left: 0;
-  border-bottom: 0;
-  margin-top: -5px;
-  margin-left: -10px;
-}
-*/ 
