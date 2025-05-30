@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ElevenLabsClient } from "elevenlabs";
-import { getTutorBaseSystemPrompt, getPageContextSystemPrompt } from "../../../lib/prompts";
+import { getTutorBaseSystemPrompt, getAdminBaseSystemPrompt, getPageContextSystemPrompt } from "../../../lib/prompts";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -33,7 +33,7 @@ async function createAudioStreamFromText(text: string): Promise<Buffer> {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, context: pageSpecificContext, threadId: clientThreadId, generateAudio, assistantId: clientAssistantId, tutorName = "Evan" } = body;
+    const { message, context: pageSpecificContext, threadId: clientThreadId, generateAudio, assistantId: clientAssistantId, userName = "Evan", userRole = "tutor" } = body;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "OpenAI API Key not configured." }, { status: 503 });
@@ -57,15 +57,23 @@ export async function POST(req: Request) {
       currentThreadId = thread.id;
     }
 
-    const baseSystemInstructions = getTutorBaseSystemPrompt(tutorName);
+    let baseSystemInstructions = "";
+    if (userRole === 'admin') {
+      baseSystemInstructions = getAdminBaseSystemPrompt(userName);
+    } else {
+      baseSystemInstructions = getTutorBaseSystemPrompt(userName);
+    }
+    
     let finalSystemInstructions = baseSystemInstructions;
 
     if (pageSpecificContext && typeof pageSpecificContext === 'string' && pageSpecificContext.trim() !== '') {
-      finalSystemInstructions = getPageContextSystemPrompt(baseSystemInstructions, pageSpecificContext, tutorName);
+      finalSystemInstructions = getPageContextSystemPrompt(baseSystemInstructions, pageSpecificContext, userName);
     }
 
     // Log the instructions and user message before sending to OpenAI
     console.log("--- OpenAI API Call Details ---");
+    console.log("User Role:", userRole);
+    console.log("User Name:", userName);
     console.log("Final System Instructions:", finalSystemInstructions);
     console.log("Full User Message to Thread:", fullUserMessage);
     console.log("Thread ID:", currentThreadId);

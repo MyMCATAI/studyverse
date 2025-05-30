@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Users } from 'lucide-react';
+import { Home, Users, Settings } from 'lucide-react';
 import { Student } from '@/data/students'; // Import Student type
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 interface TutorSidebarProps {
   students: Student[];
@@ -10,6 +11,7 @@ interface TutorSidebarProps {
 
 export default function TutorSidebar({ students, onStudentSelect, isMobile = false }: TutorSidebarProps) {
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const router = useRouter(); // Initialize router
   
   const handleStudentClick = (student: Student) => {
     const newSelectedId = selectedStudentId === student.id ? null : student.id;
@@ -20,6 +22,14 @@ export default function TutorSidebar({ students, onStudentSelect, isMobile = fal
   const handleHomeClick = () => {
     setSelectedStudentId(null);
     onStudentSelect(null);
+    // Assuming the home click should navigate to the main tutor dashboard /tutor
+    router.push('/tutor'); 
+  };
+
+  const handleAdminClick = () => {
+    setSelectedStudentId(null); // Deselect any student
+    onStudentSelect(null);      // Notify parent of deselection
+    router.push('/admin');      // Navigate to admin page
   };
 
   useEffect(() => {
@@ -104,6 +114,17 @@ export default function TutorSidebar({ students, onStudentSelect, isMobile = fal
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Admin Panel Button - Placed before user section */}
+      <div className="p-4 border-t border-border-color">
+        <button 
+          className="w-full py-3 px-4 rounded-lg flex items-center gap-3 transition-all duration-200 bg-slate-600 text-white hover:bg-slate-700 shadow-md"
+          onClick={handleAdminClick}
+        >
+          <Settings size={20} />
+          <span className="font-medium text-base">Admin Panel</span>
+        </button>
       </div>
 
       {/* User section with theme toggle */}

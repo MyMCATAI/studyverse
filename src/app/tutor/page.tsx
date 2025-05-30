@@ -290,9 +290,7 @@ export default function TutorPage() {
         const student = session ? STUDENTS_DATA.find(st => st.name === session.studentName) : null;
         if (session && student && kalypsoChatRef.current) {
           kalypsoChatRef.current.clearChatHistory();
-          let prompt = `I'm about to have a session with ${student.name} on ${session.topic} (${session.date} at ${session.time}). 
-Background on ${student.name}: ${student.bio}. 
-Last session covered: ${student.lastSessionSummary || 'N/A'}.`;
+          let prompt = `I'm about to have a session with ${student.name} on ${session.topic} (${session.date} at ${session.time}). \nBackground on ${student.name}: ${student.bio}. \nLast session covered: ${student.lastSessionSummary || 'N/A'}.`;
           if (student.hiddenInsights) {
             prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
           }
@@ -313,14 +311,11 @@ Last session covered: ${student.lastSessionSummary || 'N/A'}.`;
         const student = STUDENTS_DATA.find(s => s.id === studentId);
         if (student && kalypsoChatRef.current) {
           kalypsoChatRef.current.clearChatHistory();
-          let prompt = `Tell me more about ${student.name}'s current academic focus. 
-Key info: ${student.summary}. 
-Bio: ${student.bio}. 
-Last session: ${student.lastSessionSummary || 'N/A'}.`;
+          let prompt = `Tell me more about ${student.name}'s current academic focus. \nKey info: ${student.summary}. \nBio: ${student.bio}. \nLast session: ${student.lastSessionSummary || 'N/A'}.`;
           if (student.hiddenInsights) {
             prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
           }
-          prompt += `\n\nBased on all this, what are the most critical areas ${student.name} is working on, any specific challenges, and recent points of discussion or concern? CONCISE, plain text response. No markdown.`;
+          prompt += `\n\nBased on all this, what are the most critical areas ${student.name} is working on, any specific challenges, and recent points of discussion or concern? Provide a CONCISE, plain text response. Do NOT use markdown.`;
           kalypsoChatRef.current.sendAutomatedMessage(prompt);
         }
       } else if (action.value.startsWith('student_progress_details_')) {
@@ -328,19 +323,15 @@ Last session: ${student.lastSessionSummary || 'N/A'}.`;
         const student = STUDENTS_DATA.find(s => s.id === studentId);
         if (student && kalypsoChatRef.current) {
           kalypsoChatRef.current.clearChatHistory();
-          let prompt = `Provide a detailed progress report for ${student.name}. 
-Overall progress: ${student.progress}%. 
-Next session: ${student.schedule}. 
-Last session summary: ${student.lastSessionSummary || 'N/A'}.`;
+          let prompt = `Provide a detailed progress report for ${student.name}. \nOverall progress: ${student.progress}%. \nNext session: ${student.schedule}. \nLast session summary: ${student.lastSessionSummary || 'N/A'}.`;
           if (student.hiddenInsights) {
             prompt += formatHiddenInsightsForPrompt(student.hiddenInsights);
           }
-          prompt += `\n\nSynthesize this into a progress overview. What are current trends, key strengths, and areas needing urgent attention? CONCISE, plain text response. No markdown.`;
+          prompt += `\n\nSynthesize this into a progress overview. What are current trends, key strengths, and areas needing urgent attention? Provide a CONCISE, plain text response. Do NOT use markdown.`;
           kalypsoChatRef.current.sendAutomatedMessage(prompt);
         }
       } else if (action.value === 'navigate_calendar') {
         alert("Placeholder: Navigate to Calendar page (e.g., /calendar)");
-        // router.push('/calendar'); // Example navigation
       } else if (action.value === 'navigate_dashboard'){
         router.push('/tutor');
       }
@@ -435,7 +426,8 @@ Last session summary: ${student.lastSessionSummary || 'N/A'}.`;
       <KalypsoChat 
         ref={kalypsoChatRef}
         pageContext={kalypsoPageContext} 
-        tutorName="Evan" 
+        userName="Evan"
+        userRole="tutor"
         onWhiteboardAction={handleWhiteboardAction}
       />
     </div>
