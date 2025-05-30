@@ -192,9 +192,115 @@ export default function Dashboard({ sessions: initialSessions, onNavigateToStude
       topic: "Social Psychology & Behavior"
     }
   ];
-  
+
+  // June 2025 Tutoring Sessions - 3 per week from June 1-28
+  const june2025Sessions = [
+    // Week 1 (June 1-7)
+    {
+      id: 201,
+      studentName: "Emma Thompson",
+      date: "Monday, June 2, 2025",
+      time: "10:00 AM",
+      duration: "60 minutes",
+      topic: "Biochemistry Review & Practice"
+    },
+    {
+      id: 202,
+      studentName: "James Wilson",
+      date: "Wednesday, June 4, 2025",
+      time: "2:00 PM",
+      duration: "90 minutes",
+      topic: "Physics Practice Problems"
+    },
+    {
+      id: 203,
+      studentName: "Sarah Chen",
+      date: "Friday, June 6, 2025",
+      time: "11:30 AM",
+      duration: "60 minutes",
+      topic: "CARS Full Length Practice"
+    },
+    
+    // Week 2 (June 8-14)
+    {
+      id: 204,
+      studentName: "Michael Rodriguez",
+      date: "Monday, June 9, 2025",
+      time: "3:00 PM",
+      duration: "90 minutes",
+      topic: "Biology Systems Review"
+    },
+    {
+      id: 205,
+      studentName: "Emma Thompson",
+      date: "Wednesday, June 11, 2025",
+      time: "9:30 AM",
+      duration: "60 minutes",
+      topic: "Chemistry Practice Questions"
+    },
+    {
+      id: 206,
+      studentName: "James Wilson",
+      date: "Friday, June 13, 2025",
+      time: "4:00 PM",
+      duration: "90 minutes",
+      topic: "Physics & Math Review"
+    },
+    
+    // Week 3 (June 15-21)
+    {
+      id: 207,
+      studentName: "Sarah Chen",
+      date: "Tuesday, June 17, 2025",
+      time: "10:00 AM",
+      duration: "60 minutes",
+      topic: "CARS Strategy Review"
+    },
+    {
+      id: 208,
+      studentName: "Michael Rodriguez",
+      date: "Thursday, June 19, 2025",
+      time: "1:00 PM",
+      duration: "90 minutes",
+      topic: "Psychology & Sociology Practice"
+    },
+    {
+      id: 209,
+      studentName: "Emma Thompson",
+      date: "Saturday, June 21, 2025",
+      time: "11:00 AM",
+      duration: "60 minutes",
+      topic: "Biology Practice Questions"
+    },
+    
+    // Week 4 (June 22-28)
+    {
+      id: 210,
+      studentName: "James Wilson",
+      date: "Monday, June 23, 2025",
+      time: "2:30 PM",
+      duration: "90 minutes",
+      topic: "Physics & Chemistry Review"
+    },
+    {
+      id: 211,
+      studentName: "Sarah Chen",
+      date: "Wednesday, June 25, 2025",
+      time: "10:30 AM",
+      duration: "60 minutes",
+      topic: "CARS Full Length Practice"
+    },
+    {
+      id: 212,
+      studentName: "Michael Rodriguez",
+      date: "Friday, June 27, 2025",
+      time: "3:30 PM",
+      duration: "90 minutes",
+      topic: "Psychology & Sociology Review"
+    }
+  ];
   // Combine existing and new May 2025 sessions
-  const [sessions, setSessions] = useState<Session[]>([...initialSessionsData, ...may2025Sessions]);
+  const [sessions, setSessions] = useState<Session[]>([...initialSessionsData, ...may2025Sessions, ...june2025Sessions]);
 
   // Sample student data with enhanced color coding
   const students = [
@@ -734,17 +840,12 @@ export default function Dashboard({ sessions: initialSessions, onNavigateToStude
     }
   };
 
-  // This effect ensures that we don't have cascading state updates
-  // when switching between tutoring and student modes
-  useEffect(() => {
-    console.log(`View mode changed to: ${viewMode}`);
-  }, [viewMode]);
 
   // Filter upcoming sessions (only those in the future)
   const upcomingSessions = sessions.filter(session => {
     // Parse the session date
     let sessionDate: Date;
-    
+
     if (session.date.includes("2025")) {
       // Parse date format with year "Day, Month DD, YYYY"
       const dateParts = session.date.match(/(\w+), (\w+) (\d+), (\d+)/);
@@ -760,18 +861,23 @@ export default function Dashboard({ sessions: initialSessions, onNavigateToStude
       // For sessions without a year, we'll assume they're past
       return false;
     }
-    
+
     // Parse time
     const [hours, minutes] = session.time.split(':');
     const isPM = session.time.toLowerCase().includes('pm');
     const hourValue = parseInt(hours);
     const hourIn24 = isPM && hourValue < 12 ? hourValue + 12 : hourValue;
-    
+
     // Set time
-    sessionDate.setHours(hourIn24, parseInt(minutes.split(' ')[0]), 0);
-    
-    // Check if the session is in the future
-    return sessionDate > new Date();
+    sessionDate.setHours(hourIn24, parseInt(minutes.split(' ')[0]), 0, 0); // Set seconds and ms to 0
+
+    // Get current date in EST and set to start of day
+    const nowEST = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
+    const startOfTodayEST = new Date(nowEST);
+    startOfTodayEST.setHours(0, 0, 0, 0);
+
+    // Check if the session is today or in the future
+    return sessionDate >= startOfTodayEST;
   });
 
   const upcomingReports = reports.filter(report => report.status === 'upcoming');

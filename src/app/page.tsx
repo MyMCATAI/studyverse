@@ -135,19 +135,38 @@ export default function Home() {
     }
   };
 
-  const checkCode = () => {
-    const correctCode = "TerribleFirewall";
-    if (enteredCode === correctCode) {
-      if (targetUrl) {
-        if (targetUrl.startsWith('http')) {
-          window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        } else {
-          router.push(targetUrl);
+  const checkCode = async () => {
+    if (!enteredCode) {
+      setCodeError("Please enter a code.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/check-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: enteredCode }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        if (targetUrl) {
+          if (targetUrl.startsWith('http')) {
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+          } else {
+            router.push(targetUrl);
+          }
         }
+        closeCodePrompt();
+      } else {
+        setCodeError(data.error || "Incorrect code. Please try again.");
       }
-      closeCodePrompt();
-    } else {
-      setCodeError("Incorrect code. Please try again.");
+    } catch (error) {
+      console.error("Error checking code:", error);
+      setCodeError("An error occurred. Please try again.");
     }
   };
 
