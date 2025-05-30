@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import TutorSidebar from '@/components/tutor/TutorSidebar'
 import StudentActions from '@/components/tutor/StudentActions'
@@ -57,7 +57,8 @@ const UPCOMING_SESSIONS_DATA: Session[] = [
   }
 ];
 
-export default function TutorPage() {
+// Define the main content as a new component
+function TutorPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -426,10 +427,18 @@ export default function TutorPage() {
       <KalypsoChat 
         ref={kalypsoChatRef}
         pageContext={kalypsoPageContext} 
-        userName="Evan"
-        userRole="tutor"
+        tutorName="Evan"
         onWhiteboardAction={handleWhiteboardAction}
       />
     </div>
+  );
+}
+
+// Default export wraps TutorPageContent with Suspense
+export default function TutorPage() {
+  return (
+    <Suspense fallback={<div>Loading page...</div>}>
+      <TutorPageContent />
+    </Suspense>
   );
 } 

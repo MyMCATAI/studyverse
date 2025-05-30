@@ -398,8 +398,7 @@ export default function AdminDashboardPage() {
       <KalypsoChat 
         ref={kalypsoChatRef}
         pageContext={kalypsoPageContext} 
-        userName={adminName} 
-        userRole="admin"
+        tutorName={adminName} 
         onWhiteboardAction={handleWhiteboardAction}
       />
     </div>

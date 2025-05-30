@@ -413,6 +413,10 @@ const TestCalendar: React.FC<TestCalendarProps> = ({
 
       return dayEvents.map(event => {
         const resource = event.resource;
+        if (!resource) {
+          return `${event.title} (Details unavailable)`; // Fallback for missing resource
+        }
+
         if (resource.eventType === 'exam' || resource.eventType === 'mcat') {
           // Format MCAT exam events with scores if available
           const scoreInfo = resource.fullLengthExam?.dataPulses?.reduce((acc: any, pulse: any) => {
@@ -441,7 +445,7 @@ const TestCalendar: React.FC<TestCalendarProps> = ({
             'review': 'Review Session'
           };
           
-          const activityType = activityTypeMap[resource.eventType?.toLowerCase()] || resource.eventType || 'Study Session';
+          const activityType = activityTypeMap[resource.eventType?.toLowerCase() ?? ''] || resource.eventType || 'Study Session';
           
           return `${resource.activityTitle} (${activityType}, ${resource.hours}h, ${resource.status})`;
         }
