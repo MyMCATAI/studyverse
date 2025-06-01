@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRef, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Import components
 import Navbar from '@/components/Navbar'
@@ -19,13 +20,17 @@ const DynamicGlobe = dynamic(() => import('@/components/ui/globe').then(mod => m
 export default function Home() {
   const quoteRef = useRef<HTMLDivElement>(null)
   const [showVideoModal, setShowVideoModal] = useState(false)
-  const [showCodePrompt, setShowCodePrompt] = useState(false);
-  const [enteredCode, setEnteredCode] = useState('');
-  const [targetUrl, setTargetUrl] = useState<string | null>(null);
-  const [codeError, setCodeError] = useState<string | null>(null);
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const router = useRouter();
+  const [enteredCode, setEnteredCode] = useState('')
+  const [targetUrl, setTargetUrl] = useState<string | null>(null)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [showCalendarModal, setShowCalendarModal] = useState(false)
+  const router = useRouter()
+  const { isAuthenticated, login, logout } = useAuth()
+  const searchParams = useSearchParams()
   
+  // New state to control the login modal visibility explicitly
+  const [displayLoginModal, setDisplayLoginModal] = useState(false)
+
   // Sample data for the globe
   const globeData = [
     {
@@ -117,73 +122,96 @@ export default function Home() {
     document.body.style.overflow = ''; // Re-enable scrolling
   }
 
+  useEffect(() => {
+    // Check for query param to show login modal on initial load (after redirect from middleware)
+    if (searchParams.get('showLogin') === 'true' && !isAuthenticated) {
+      setDisplayLoginModal(true);
+      // Optional: remove the query parameter from URL without reloading the page
+      // router.replace('/', { scroll: false }); // This might cause a re-render, test behavior
+      document.body.style.overflow = 'hidden';
+    }
+  }, [searchParams, isAuthenticated, router]);
+
   const handleGatedLinkClick = (url: string) => {
-    setTargetUrl(url);
-    setShowCodePrompt(true);
-    setEnteredCode('');
-    setCodeError(null);
-    document.body.style.overflow = 'hidden';
+    if (!isAuthenticated) {
+      setTargetUrl(url);
+      setDisplayLoginModal(true); // Show login modal
+      setEnteredCode('');
+      setCodeError(null);
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (url.startsWith('http')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        router.push(url);
+      }
+    }
   };
 
   const closeCodePrompt = () => {
-    setShowCodePrompt(false);
+    setDisplayLoginModal(false); // Hide login modal
     setTargetUrl(null);
     setEnteredCode('');
     setCodeError(null);
-    if (!showVideoModal) {
+    if (!showVideoModal && !showCalendarModal) {
       document.body.style.overflow = '';
     }
   };
 
-  const checkCode = async () => {
+  const handleLoginAttempt = async () => {
     if (!enteredCode) {
       setCodeError("Please enter a code.");
       return;
     }
+    setCodeError(null);
 
-    try {
-      const response = await fetch('/api/check-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code: enteredCode }),
-      });
+    const success = await login(enteredCode);
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        if (targetUrl) {
-          if (targetUrl.startsWith('http')) {
-            window.open(targetUrl, '_blank', 'noopener,noreferrer');
-          } else {
-            router.push(targetUrl);
-          }
+    if (success) {
+      setDisplayLoginModal(false); // Hide login modal on success
+      if (targetUrl) {
+        if (targetUrl.startsWith('http')) {
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        } else {
+          router.push(targetUrl);
         }
-        closeCodePrompt();
-      } else {
-        setCodeError(data.error || "Incorrect code. Please try again.");
+        setTargetUrl(null);
       }
-    } catch (error) {
-      console.error("Error checking code:", error);
-      setCodeError("An error occurred. Please try again.");
+      // closeCodePrompt(); // Already called by setDisplayLoginModal(false) effectively
+    } else {
+      setCodeError("Incorrect code or server error. Please try again.");
     }
   };
 
   const handleCodeKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      checkCode();
+      handleLoginAttempt();
     }
   };
 
+  useEffect(() => {
+    // Manage body overflow based on any modal being active
+    if (displayLoginModal || showVideoModal || showCalendarModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup
+    return () => {
+      if (!displayLoginModal && !showVideoModal && !showCalendarModal) {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [displayLoginModal, showVideoModal, showCalendarModal]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Navbar onGatedLinkClick={handleGatedLinkClick} />
+      <Navbar onGatedLinkClick={handleGatedLinkClick} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       <Modals 
         showVideoModal={showVideoModal}
         closeVideoModal={closeVideoModal}
-        showCodePrompt={showCodePrompt}
+        showCodePrompt={displayLoginModal}
         closeCodePrompt={closeCodePrompt}
         showCalendarModal={showCalendarModal}
         closeCalendarModal={closeCalendarModal}
@@ -191,7 +219,7 @@ export default function Home() {
         enteredCode={enteredCode}
         setEnteredCode={setEnteredCode}
         codeError={codeError}
-        checkCode={checkCode}
+        checkCode={handleLoginAttempt}
         handleCodeKeyPress={handleCodeKeyPress}
       />
 
