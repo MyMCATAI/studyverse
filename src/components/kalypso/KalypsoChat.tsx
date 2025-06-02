@@ -423,7 +423,7 @@ const KalypsoChat = forwardRef<KalypsoChatRef, KalypsoChatProps>(({ pageContext,
               </div>
             )}
             <div 
-                className={`chat-ui-container absolute left-1/2 -translate-x-1/2 w-[350px] md:w-[400px] flex flex-col origin-bottom transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-90 pointer-events-none'}`}
+                className={`chat-ui-container absolute left-1/2 -translate-x-1/2 w-[450px] md:w-[500px] flex flex-col origin-bottom transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-90 pointer-events-none'}`}
                 style={{
                     bottom: `calc(100% + ${GAP_ABOVE_IMAGE}px)`, // Position bottom of chat UI above the top of kalypsoRef
                     zIndex: 50 // Lower z-index than whiteboard if they could overlap
@@ -438,7 +438,7 @@ const KalypsoChat = forwardRef<KalypsoChatRef, KalypsoChatProps>(({ pageContext,
                       className={`max-w-[80%] p-3.5 text-lg rounded-3xl shadow-xl break-words transition-all duration-300 ease-in-out transform hover:scale-105 ${
                         chat.sender === 'user'
                           ? 'bg-blue-600 text-white rounded-br-xl' // Changed to blue, adjusted rounding for tail
-                          : 'bg-slate-200 text-slate-800 rounded-bl-xl' // Adjusted rounding for tail
+                          : 'bg-slate-200 text-slate-800 rounded-bl-xl ml-4' // Adjusted rounding for tail, added ml-4
                       }`}
                     >
                       {chat.isLoading ? ( 

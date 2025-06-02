@@ -258,13 +258,13 @@ export default function AdminDashboardPage() {
         {
           id: 'students_at_risk_summary',
           title: `Students At Risk (${atRiskStudents.length})`,
-          description: `Top at risk: ${atRiskStudents.length > 0 ? topAtRiskStudentsNames : 'None'}. Focus on these students to mitigate churn.`,
+          description: `Top at risk: ${atRiskStudents.length > 0 ? topAtRiskStudentsNames : 'None'}. Focus on the top 3 of these students to mitigate churn.`,
           action: { type: 'callback', value: 'show_at_risk_details', text: 'Analyze At-Risk Students' }
         },
         {
           id: 'retention_churn_metrics',
           title: `Retention & Churn Rates`,
-          description: `Current Retention: ${currentRetentionRate.toFixed(1)}%. Churn Rate: ${churnRateData.toFixed(1)}%.`,
+          description: `Current Retention: ${currentRetentionRate.toFixed(1)}%.`,
           action: { type: 'callback', value: 'analyze_retention_churn', text: 'Insights on Retention/Churn' }
         },
         {
@@ -348,18 +348,28 @@ export default function AdminDashboardPage() {
       switch (action.value) {
         case 'show_at_risk_details':
           const topAtRiskStudentsText = studentsAtRiskData.slice(0,5).map(s => `${s.name} (Tutor: ${s.assignedTutorName}, Churn Prob: ${(s.churnProbability * 100).toFixed(0)}%, Last Session: ${s.lastSessionDate}, Notes: ${s.notes || 'N/A'})`).join('\n - ');
-          prompt = `I'm looking at the students at risk. We have ${studentsAtRiskData.length} students identified as at risk or needing attention. Some of the top at-risk students include: \n - ${topAtRiskStudentsText}\n\nBased on this, what are the common themes or urgent intervention points for these students? What strategies could we (as platform admin) suggest or implement to support our tutors in addressing these high-risk students effectively? Provide a CONCISE, plain text response. Do NOT use markdown.`;
+          prompt = `We have ${studentsAtRiskData.length} students 
+          at risk or needing attention. Top ones: \n - ${topAtRiskStudentsText}\n\n          
+          Focus on the top 3 of these students to mitigate churn.
+          What are common issues and urgent steps for them? How can we help tutors support these students? 
+          Be specific and explain in simple, plain english. Refer to their tutor name in your response if necessary. 
+          Your response should be concise and to the point while still flowing nicely, dont overexplain, this is just the summary introducing major themes, end with a suggested followup question to prompt me to ask you more questions.
+          Max 100 words, format as a basic paragraph. No markdown.`;
           break;
         case 'analyze_retention_churn':
-          prompt = `Our current retention rate is ${retentionRateData.toFixed(1)}% and churn rate is ${churnRateData.toFixed(1)}%. Given the context that we have ${studentsAtRiskData.length} students currently identified as at risk or needing attention, what are the likely primary drivers contributing to our churn? What high-level, actionable strategies can we, as administrators, consider to improve overall student retention on the platform? Provide a CONCISE, plain text response. Do NOT use markdown.`;
+          prompt = `Retention is ${retentionRateData.toFixed(1)}%, 
+          churn is ${churnRateData.toFixed(1)}%. We have ${studentsAtRiskData.length} students at risk.
+           What's causing churn? What can admins do to improve retention? 
+           Be specific and explain in simple, plain English. Max 150 words format as a basic paragraph. No markdown.`;
           break;
         case 'analyze_student_acquisition':
           const growthDiffContext = Math.abs(newStudentsThisMonthData - newStudentsLastMonthData);
           const growthTrendContext = newStudentsThisMonthData === newStudentsLastMonthData ? 'remained the same' : (newStudentsThisMonthData > newStudentsLastMonthData ? `an increase of ${growthDiffContext}` : `a decrease of ${growthDiffContext}`);
-          prompt = `Student acquisition this month is ${newStudentsThisMonthData}, which is ${growthTrendContext} compared to ${newStudentsLastMonthData} last month. What internal or external factors might be influencing this trend? What are 2-3 actionable strategies the platform could implement to boost student acquisition for the upcoming month? Provide a CONCISE, plain text response. Do NOT use markdown.`;
+          prompt = `This month, ${newStudentsThisMonthData} new students joined. This is ${growthTrendContext} compared to ${newStudentsLastMonthData} last month. Why this trend? Give 2-3 ways to get more students next month. Be specific and explain in simple, plain English. 
+          Max 150 words. Format as a basic paragraph. No markdown.`;
           break;
         default:
-          prompt = `An action with the value '${action.value}' was triggered from the admin dashboard whiteboard. Provide a brief overview of what this type of metric or action typically relates to in platform management and why an admin would be interested in it. Provide a CONCISE, plain text response. Do NOT use markdown.`;
+          prompt = `Action '${action.value}' was triggered. What does this mean in platform management? Why is it important for an admin? Explain in simple, plain English. Max 150 words. No markdown.`;
       }
       if (prompt) {
         kalypsoChatRef.current.sendAutomatedMessage(prompt, true);
