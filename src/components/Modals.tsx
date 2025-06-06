@@ -35,7 +35,7 @@ export default function Modals({
           <div className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden" onClick={e => e.stopPropagation()}>
             <iframe
               className="absolute w-full h-full"
-              src="https://www.youtube.com/embed/_0jkXujlHdQ?si=SgXqn5UgqeanoFxX&autoplay=1"
+              src="https://www.youtube.com/embed/2ltRTaTkAc4?autoplay=1"
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
