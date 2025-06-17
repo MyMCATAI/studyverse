@@ -2,71 +2,37 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Student } from '@/data/students'
 
 interface SidebarProps {
   pageType: 'tutor' | 'firm';
-  onStudentSelect?: (student: Student | null) => void;
+  onStudentSelect?: (studentId: number | null) => void;
   onDashboardToggle?: (isActive: boolean) => void;
   isMobile?: boolean;
+  students: Student[];
 }
 
-interface Student {
-  id: number;
-  name: string;
-  summary: string;
-  progress: number; // Progress percentage
-  schedule: string;
-}
-
-export default function Sidebar({ pageType, onStudentSelect, onDashboardToggle, isMobile = false }: SidebarProps) {
-  // Enhanced student data with progress and schedule
-  const [students, setStudents] = useState<Student[]>([
-    { 
-      id: 1, 
-      name: "Emma Thompson", 
-      summary: "3rd year medical student, focused on cardiology, struggling with ECG interpretation",
-      progress: 68,
-      schedule: "Next session: Thursday, 3:00 PM"
-    },
-    { 
-      id: 2, 
-      name: "James Wilson", 
-      summary: "2nd year student, needs help with neurology fundamentals and neuroanatomy",
-      progress: 42,
-      schedule: "Next session: Monday, 5:30 PM"
-    },
-    { 
-      id: 3, 
-      name: "Sarah Chen", 
-      summary: "4th year, preparing for pharmacology board exams, strong in theory",
-      progress: 85,
-      schedule: "Next session: Wednesday, 2:15 PM"
-    },
-    { 
-      id: 4, 
-      name: "Michael Rodriguez", 
-      summary: "1st year student, building foundational knowledge in anatomy and physiology",
-      progress: 31,
-      schedule: "Next session: Tuesday, 4:45 PM"
-    }
-  ]);
-
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+export default function Sidebar({ pageType, onStudentSelect, onDashboardToggle, isMobile = false, students: propStudents }: SidebarProps) {
+  // Use students from props
+  const [students, setStudents] = useState<Student[]>(propStudents);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [isDashboardActive, setIsDashboardActive] = useState(false);
 
-  // Show student list only for tutor pageType
+  // Update local students if props change
+  useEffect(() => {
+    setStudents(propStudents);
+  }, [propStudents]);
+
   const showStudents = pageType === 'tutor';
   
-  // Handle student click to pass to parent component
   const handleStudentClick = (student: Student) => {
-    const newSelectedState = selectedStudent?.id === student.id ? null : student;
-    setSelectedStudent(newSelectedState);
+    const newSelectedId = selectedStudentId === student.id ? null : student.id;
+    setSelectedStudentId(newSelectedId);
     if (onStudentSelect) {
-      onStudentSelect(newSelectedState);
+      onStudentSelect(newSelectedId);
     }
     
-    // Close dashboard when student is selected
-    if (isDashboardActive && newSelectedState) {
+    if (isDashboardActive && newSelectedId !== null) {
       setIsDashboardActive(false);
       if (onDashboardToggle) {
         onDashboardToggle(false);
@@ -74,7 +40,6 @@ export default function Sidebar({ pageType, onStudentSelect, onDashboardToggle, 
     }
   };
   
-  // Handle dashboard button click
   const handleDashboardClick = () => {
     const newDashboardState = !isDashboardActive;
     setIsDashboardActive(newDashboardState);
@@ -82,28 +47,26 @@ export default function Sidebar({ pageType, onStudentSelect, onDashboardToggle, 
       onDashboardToggle(newDashboardState);
     }
     
-    // Clear selected student when dashboard is activated
-    if (newDashboardState && selectedStudent) {
-      setSelectedStudent(null);
+    if (newDashboardState && selectedStudentId !== null) {
+      setSelectedStudentId(null);
       if (onStudentSelect) {
         onStudentSelect(null);
       }
     }
   };
 
-  // Apply blur to main content when sidebar is active on mobile
   useEffect(() => {
     if (isMobile) {
       const mainContent = document.getElementById('main-content');
       if (mainContent) {
-        if (isDashboardActive || selectedStudent) {
+        if (isDashboardActive || selectedStudentId !== null) {
           mainContent.classList.add('content-blurred');
         } else {
           mainContent.classList.remove('content-blurred');
         }
       }
     }
-  }, [isDashboardActive, selectedStudent, isMobile]);
+  }, [isDashboardActive, selectedStudentId, isMobile]);
 
   return (
     <aside className="bg-sidebar-bg h-full w-full flex flex-col z-20">
@@ -142,7 +105,7 @@ export default function Sidebar({ pageType, onStudentSelect, onDashboardToggle, 
             {students.map(student => (
               <li 
                 key={student.id} 
-                className={`sidebar-item px-3 py-3 cursor-pointer text-sm ${selectedStudent?.id === student.id ? 'bg-hover-color' : ''}`}
+                className={`sidebar-item px-3 py-3 cursor-pointer text-sm ${selectedStudentId === student.id ? 'bg-hover-color' : ''}`}
                 onClick={() => handleStudentClick(student)}
               >
                 <div className="flex items-center gap-2">

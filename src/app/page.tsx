@@ -1,10 +1,12 @@
 'use client'
 
+import React, { Suspense } from 'react';
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRef, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Import components
 import Navbar from '@/components/Navbar'
@@ -16,15 +18,26 @@ import Modals from '@/components/Modals'
 // Dynamically import the Globe component to avoid SSR issues
 const DynamicGlobe = dynamic(() => import('@/components/ui/globe').then(mod => mod.World), { ssr: false })
 
-export default function Home() {
+// Renamed your original Home component to PageClientContent
+function PageClientContent() {
   const quoteRef = useRef<HTMLDivElement>(null)
   const [showVideoModal, setShowVideoModal] = useState(false)
-  const [showCodePrompt, setShowCodePrompt] = useState(false);
-  const [enteredCode, setEnteredCode] = useState('');
-  const [targetUrl, setTargetUrl] = useState<string | null>(null);
-  const [codeError, setCodeError] = useState<string | null>(null);
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const router = useRouter();
+  const [enteredCode, setEnteredCode] = useState('')
+  const [targetUrl, setTargetUrl] = useState<string | null>(null)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [showCalendarModal, setShowCalendarModal] = useState(false)
+  const router = useRouter()
+  const { isAuthenticated, login, logout } = useAuth()
+  const searchParams = useSearchParams();
+  
+  const [displayLoginModal, setDisplayLoginModal] = useState(false);
+
+  useEffect(() => {
+    if (searchParams && searchParams.get('showLogin') === 'true' && !isAuthenticated) {
+      setDisplayLoginModal(true);
+      document.body.style.overflow = 'hidden';
+    }
+  }, [searchParams, isAuthenticated, router]);
   
   // Sample data for the globe
   const globeData = [
@@ -118,53 +131,82 @@ export default function Home() {
   }
 
   const handleGatedLinkClick = (url: string) => {
-    setTargetUrl(url);
-    setShowCodePrompt(true);
-    setEnteredCode('');
-    setCodeError(null);
-    document.body.style.overflow = 'hidden';
+    if (!isAuthenticated) {
+      setTargetUrl(url);
+      setDisplayLoginModal(true); 
+      setEnteredCode('');
+      setCodeError(null);
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (url.startsWith('http')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        router.push(url);
+      }
+    }
   };
 
   const closeCodePrompt = () => {
-    setShowCodePrompt(false);
+    setDisplayLoginModal(false); 
     setTargetUrl(null);
     setEnteredCode('');
     setCodeError(null);
-    if (!showVideoModal) {
+    if (!showVideoModal && !showCalendarModal) {
       document.body.style.overflow = '';
     }
   };
 
-  const checkCode = () => {
-    const correctCode = "TerribleFirewall";
-    if (enteredCode === correctCode) {
+  const handleLoginAttempt = async () => {
+    if (!enteredCode) {
+      setCodeError("Please enter a code.");
+      return;
+    }
+    setCodeError(null);
+
+    const success = await login(enteredCode);
+
+    if (success) {
+      setDisplayLoginModal(false); 
       if (targetUrl) {
         if (targetUrl.startsWith('http')) {
           window.open(targetUrl, '_blank', 'noopener,noreferrer');
         } else {
           router.push(targetUrl);
         }
+        setTargetUrl(null);
       }
-      closeCodePrompt();
     } else {
-      setCodeError("Incorrect code. Please try again.");
+      setCodeError("Incorrect code or server error. Please try again.");
     }
   };
 
   const handleCodeKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      checkCode();
+      handleLoginAttempt();
     }
   };
 
+  useEffect(() => {
+    if (displayLoginModal || showVideoModal || showCalendarModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      if (!displayLoginModal && !showVideoModal && !showCalendarModal) {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [displayLoginModal, showVideoModal, showCalendarModal]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Navbar onGatedLinkClick={handleGatedLinkClick} />
+      <Navbar onGatedLinkClick={handleGatedLinkClick} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       <Modals 
         showVideoModal={showVideoModal}
         closeVideoModal={closeVideoModal}
-        showCodePrompt={showCodePrompt}
+        showCodePrompt={displayLoginModal} 
         closeCodePrompt={closeCodePrompt}
         showCalendarModal={showCalendarModal}
         closeCalendarModal={closeCalendarModal}
@@ -172,12 +214,11 @@ export default function Home() {
         enteredCode={enteredCode}
         setEnteredCode={setEnteredCode}
         codeError={codeError}
-        checkCode={checkCode}
+        checkCode={handleLoginAttempt}
         handleCodeKeyPress={handleCodeKeyPress}
       />
 
       <section className="relative min-h-screen overflow-hidden bg-[#171234]">
-        {/* Background video */}
         <video
           className="absolute w-full h-full object-cover"
           src="/StarsTwinkling.mp4"
@@ -187,11 +228,7 @@ export default function Home() {
           playsInline
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#10102a]/60 via-black/40 to-[#001435]/70" />
-        
-        {/* Gradient overlay for smooth transition */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#001435] to-transparent z-10"></div>
-        
-        {/* Content container */}
         <div className="relative z-10 container mx-auto px-4 min-h-[calc(100vh-5rem)] flex items-center justify-center">
           <div className="max-w-4xl w-full text-center">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight" 
@@ -226,8 +263,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center animate-bounce">
           <span className="text-white/60 text-sm mb-2">Scroll to explore</span>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -236,7 +271,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bernie Quote Section */}
       <section 
         ref={quoteRef} 
         className="w-full py-16 relative bg-gradient-to-b from-[#011334] via-[#011334] to-[#0a4a8f]"
@@ -268,10 +302,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Investment Section */}
       <Investment />
 
-      {/* Tutors Section with Kalypso */}
       <section id="tutors" className="py-24 bg-gradient-to-br from-teal-50 to-white relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent"></div>
         <div className="container mx-auto px-4">
@@ -344,7 +376,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Firms Section */}
       <section id="firms" className="py-24 bg-gradient-to-bl from-blue-50 to-white relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
         <div className="container mx-auto px-4">
@@ -415,7 +446,6 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Students Section */}
       <section id="students" className="py-24 bg-gradient-to-br from-purple-50 to-white relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
         <div className="container mx-auto px-4">
@@ -492,7 +522,6 @@ export default function Home() {
       <MyCaseStudy />
 
       <section className="py-24 bg-gradient-to-br from-[#083462] to-[#0a1c3b] text-white relative overflow-hidden">
-        {/* Background elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-1/4 w-64 h-64 rounded-full bg-teal-400 filter blur-3xl"></div>
           <div className="absolute bottom-10 right-1/4 w-72 h-72 rounded-full bg-blue-500 filter blur-3xl"></div>
@@ -502,7 +531,6 @@ export default function Home() {
           <span className="inline-block px-4 py-1 rounded-full bg-red-500/20 text-red-200 font-medium text-sm tracking-wider mb-6">STOP BEING BLIND</span>
           <h2 className="text-4xl lg:text-5xl font-bold mb-8 leading-tight max-w-4xl mx-auto">Build a better firm, build a better world</h2>
           
-          {/* Globe moved here, directly under the header */}
           <div className="w-full max-w-3xl h-[400px] rounded-lg overflow-hidden mx-auto mb-12">
             <DynamicGlobe globeConfig={globeConfig} data={globeData} />
           </div>
@@ -611,6 +639,23 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// This is the new default export for the page
+export default function Home() {
+  // You can add a more sophisticated loading skeleton here if you like
+  const fallbackContent = (
+    <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+      <p className="text-white text-xl">Loading Studyverse...</p>
+      {/* You could add a spinner or a simplified version of your Navbar/header here */}
+    </div>
+  );
+
+  return (
+    <Suspense fallback={fallbackContent}>
+      <PageClientContent />
+    </Suspense>
   );
 }
 
