@@ -3,7 +3,7 @@ import Image from 'next/image'
 export default function KalypsoSection() {
   return (
     <div className="flex flex-col items-center mb-16">
-      <p className="text-xl text-center text-[#083462]/80 max-w-3xl mx-auto mb-8">
+      <p className="text-xl text-center text-white max-w-3xl mx-auto mb-8">
         Your out-of-this-world friend is an AI companion that&apos;s vertically integrated across every level of your business.
       </p>
 

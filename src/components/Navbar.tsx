@@ -21,7 +21,7 @@ export default function Navbar({ onGatedLinkClick }: NavbarProps) {
       </div>
       
       <div className="hidden md:flex items-center gap-8 text-white/90">
-        <a href="#learn-more" className="hover:text-white transition-colors">Investment</a>
+        <a href="#insights" className="hover:text-white transition-colors">Insights</a>
         <a href="#tutors" className="hover:text-white transition-colors">Tutors</a>
         <a href="#firms" className="hover:text-white transition-colors">Firms</a>
         <a href="#students" className="hover:text-white transition-colors">Students</a>

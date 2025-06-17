@@ -196,10 +196,10 @@ export default function Home() {
           <div className="max-w-4xl w-full text-center">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight" 
                style={{ textShadow: '0 0 15px rgba(45, 212, 191, 0.5), 0 0 30px rgba(45, 212, 191, 0.3)' }}>
-              Create a world of learning
+              Create a world for your firm
             </h1>
             <p className="text-xl md:text-2xl text-white/90 my-8 mx-auto max-w-3xl">
-              We help tutoring firms become 10x more effective by building personalized game worlds that their tutors can manage.
+              Firms have no clue what's going on with students and tutors, but we do — keep parents happy with AI software that makes you 10x better.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
               <button 
@@ -214,14 +214,14 @@ export default function Home() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                   </svg>
-                  Watch Demo
+                  See Student Insights
                 </span>
               </button>
               <button 
                 onClick={openCalendarModal}
                 className="bg-transparent text-white py-4 text-xl border-white border px-10 rounded-xl font-bold hover:bg-white/10 transition-all duration-300"
               >
-                Register
+                Get Visibility Now
               </button>
             </div>
           </div>
@@ -259,10 +259,10 @@ export default function Home() {
           </div>
           <div className="max-w-2xl">
             <h1 className="text-3xl font-light text-white/80 mb-4 italic leading-relaxed" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)', fontFamily: 'Georgia, serif' }}>
-              &ldquo;Higher education should be a right for all, not a privilege for the few.&rdquo;
+              &ldquo;Education should be a right, not a privilege.&rdquo;
             </h1>
             <p className="text-xl text-blue-100/70 font-normal italic" style={{ fontFamily: 'Georgia, serif' }}>
-              Senator Bernie Sanders of Vermont
+              -Bernie Sanders
             </p>
           </div>
         </div>
@@ -270,17 +270,12 @@ export default function Home() {
 
       {/* Investment Section */}
       <Investment />
-      
-      {/* MyMCAT.ai Case Study - Moved below Investment */}
-      <MyCaseStudy />
 
       {/* Tutors Section with Kalypso */}
       <section id="tutors" className="py-24 bg-gradient-to-br from-teal-50 to-white relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent"></div>
         <div className="container mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center text-[#083462] mb-16">Kalypso Helps Solve Hard Problems</h2>
-          
-          <KalypsoSection />
+          <h2 className="text-5xl font-bold text-center text-[#083462] mb-16">Make Tutors Better with AI Tools</h2>
           
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="w-full lg:w-1/2 order-2 lg:order-1">
@@ -491,6 +486,11 @@ export default function Home() {
         </div>
       </section>
 
+
+
+      {/* MyMCAT.ai Case Study - Moved to bottom */}
+      <MyCaseStudy />
+
       <section className="py-24 bg-gradient-to-br from-[#083462] to-[#0a1c3b] text-white relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute inset-0 opacity-10">
@@ -499,8 +499,8 @@ export default function Home() {
         </div>
         
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <span className="inline-block px-4 py-1 rounded-full bg-white/10 text-white font-medium text-sm tracking-wider mb-6">GET STARTED</span>
-          <h2 className="text-4xl lg:text-5xl font-bold mb-8 leading-tight max-w-4xl mx-auto">Create a world for your firm</h2>
+          <span className="inline-block px-4 py-1 rounded-full bg-red-500/20 text-red-200 font-medium text-sm tracking-wider mb-6">STOP BEING BLIND</span>
+          <h2 className="text-4xl lg:text-5xl font-bold mb-8 leading-tight max-w-4xl mx-auto">Build a better firm, build a better world</h2>
           
           {/* Globe moved here, directly under the header */}
           <div className="w-full max-w-3xl h-[400px] rounded-lg overflow-hidden mx-auto mb-12">
@@ -508,15 +508,15 @@ export default function Home() {
           </div>
           
           <p className="text-xl max-w-3xl mx-auto mb-12 text-white/80">
-            Join thousands of tutors, firms, and students who are revolutionizing education with Studyverse.
+            Transform your tutoring firm from blind to brilliant. See every practice problem, every struggle, every opportunity.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-6 max-w-xl mx-auto">
             <button 
               onClick={openCalendarModal}
-              className="px-8 py-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-lg font-bold rounded-xl hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-300 hover:-translate-y-1 flex-1 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-400 text-white text-lg font-bold rounded-xl hover:shadow-lg hover:shadow-red-500/20 transition-all duration-300 hover:-translate-y-1 flex-1 flex items-center justify-center gap-2"
             >
-              <span>Join Our Alliance</span>
+              <span>Stop Flying Blind</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
@@ -526,7 +526,7 @@ export default function Home() {
               onClick={openCalendarModal}
               className="px-8 py-4 bg-white/10 text-white text-lg font-bold rounded-xl border border-white/20 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 hover:-translate-y-1 flex-1 flex items-center justify-center"
             >
-              Request Demo
+              See Student Data
             </button>
           </div>
         </div>
