@@ -16,6 +16,17 @@ async function createAudioStreamFromText(text: string): Promise<Buffer> {
     // ElevenLabs will error on empty or whitespace-only strings
     throw new Error("Text to convert to audio cannot be empty.");
   }
+  
+  // Initialize ElevenLabs client if not already done
+  if (!elevenlabs) {
+    if (!process.env.ELEVENLABS_API_KEY) {
+      throw new Error("ElevenLabs API Key not configured.");
+    }
+    elevenlabs = new ElevenLabsClient({
+      apiKey: process.env.ELEVENLABS_API_KEY,
+    });
+  }
+  
   const audioStream = await elevenlabs.generate({
     voice: "Kalypso",
     model_id: "eleven_multilingual_v2",
