@@ -7,9 +7,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const elevenlabs = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
-});
+// Initialize ElevenLabs client lazily to avoid build-time errors
+let elevenlabs: ElevenLabsClient | null = null;
 
 // Helper function to create audio stream
 async function createAudioStreamFromText(text: string): Promise<Buffer> {

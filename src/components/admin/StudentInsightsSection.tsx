@@ -92,7 +92,7 @@ const StudentInsightsSection: React.FC<StudentInsightsSectionProps> = ({
                       {student.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{(student.churnProbability * 100).toFixed(0)}%</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{student.churnProbability ? (student.churnProbability * 100).toFixed(0) : 'N/A'}%</td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{student.lastSessionDate}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{student.notes || 'N/A'}</td>
                 </tr>

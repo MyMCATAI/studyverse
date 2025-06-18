@@ -4,6 +4,35 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
+// Type definitions
+export interface AdminStudentData {
+  id: number
+  name: string
+  image?: string
+  status: 'high-risk' | 'medium-risk' | 'low-risk' | 'active'
+  lastSession?: string
+  lastSessionDate?: string
+  missedSessions?: number
+  academicTrend?: 'declining' | 'improving' | 'stagnant'
+  engagementScore?: number
+  assignedTutorName?: string
+  churnProbability?: number
+  notes?: string
+}
+
+export interface AdminTutorData {
+  id: number
+  name: string
+  email: string
+  profileImageUrl: string
+  studentCount: number
+  totalSessionsConducted: number
+  averageRating: number
+  retentionScore: number
+  revenueGenerated: number
+  lastActive: string
+}
+
 // Mock data - replace with real API calls
 const studentsAtRisk = [
   {
