@@ -79,15 +79,35 @@ export default function Investment() {
         </div>
 
         {/* Kalypso Solution */}
-        <div className="bg-gradient-to-r from-teal-600/90 to-blue-600/90 backdrop-blur-sm rounded-2xl p-8 lg:p-12">
-          <div className="max-w-6xl mx-auto text-center">
-            <h3 className="text-4xl lg:text-5xl font-bold text-white mb-8">
-              Kalypso helps you <span className="text-yellow-300">see everything</span>
+        <div className="max-w-6xl mx-auto text-center mt-20">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 lg:p-12 mb-8">
+            <h3 className="text-5xl lg:text-7xl font-black text-[#083462] mb-8 transform hover:scale-105 transition-all duration-500">
+              Kalypso helps you <span className="text-[#083462] animate-glow-pulse inline-block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">see everything</span>
             </h3>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8">
-              <KalypsoSection />
+            {/* Kalypso Icon */}
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                <div className="w-[400px] h-[400px] flex items-center justify-center">
+                  <img
+                    src="/kalypsoeating.gif"
+                    alt="Kalypso AI assistant"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-[#083462] text-white px-6 py-3 rounded-full shadow-lg">
+                  <p className="font-semibold text-base">Your AI companion</p>
+                </div>
+              </div>
             </div>
+            
+            <p className="text-xl lg:text-2xl text-gray-700 font-medium max-w-4xl mx-auto">
+              Your out-of-this-world friend is an AI companion that's vertically integrated across every level of your business.
+            </p>
+          </div>
+          
+          <div className="mt-12 animate-fade-in-up">
+            <KalypsoSection />
           </div>
         </div>
       </div>
