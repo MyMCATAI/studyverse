@@ -230,7 +230,7 @@ function PageClientContent() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#10102a]/60 via-black/40 to-[#001435]/70" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#001435] to-transparent z-10"></div>
         <div className="relative z-10 container mx-auto px-4 min-h-[calc(100vh-5rem)] flex items-center justify-center">
-          <div className="max-w-4xl w-full text-center">
+          <header className="max-w-4xl w-full text-center">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight" 
                style={{ textShadow: '0 0 15px rgba(45, 212, 191, 0.5), 0 0 30px rgba(45, 212, 191, 0.3)' }}>
               Create a world for your firm
@@ -261,7 +261,7 @@ function PageClientContent() {
                 Get Visibility Now
               </button>
             </div>
-          </div>
+          </header>
         </div>
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center animate-bounce">
           <span className="text-white/60 text-sm mb-2">Scroll to explore</span>
@@ -304,15 +304,14 @@ function PageClientContent() {
 
       <Investment />
 
-      <section id="tutors" className="py-24 bg-gradient-to-br from-teal-50 to-white relative">
+      <section id="tutors" className="py-24 bg-gradient-to-br from-teal-50 to-white relative" aria-labelledby="tutors-heading">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent"></div>
         <div className="container mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center text-[#083462] mb-16">Make Tutors Better with AI Tools</h2>
           
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="w-full lg:w-1/2 order-2 lg:order-1">
               <span className="text-teal-600 font-semibold text-lg mb-2 block tracking-wide">FOR TUTORS</span>
-              <h2 className="text-4xl font-bold text-[#083462] mb-6">Make Tutors Better with AI Tools</h2>
+              <h2 id="tutors-heading" className="text-4xl font-bold text-[#083462] mb-6">Make Tutors Better with AI Tools</h2>
               <p className="text-gray-600 text-lg mb-8">
                 Our AI-powered platform helps tutors create personalized learning experiences, 
                 generate course content, and track student progress — all in one place.
@@ -376,7 +375,7 @@ function PageClientContent() {
         </div>
       </section>
 
-      <section id="firms" className="py-24 bg-gradient-to-bl from-blue-50 to-white relative">
+      <section id="firms" className="py-24 bg-gradient-to-bl from-blue-50 to-white relative" aria-labelledby="firms-heading">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-16">
@@ -398,7 +397,7 @@ function PageClientContent() {
             
             <div className="w-full lg:w-1/2">
               <span className="text-blue-600 font-semibold text-lg mb-2 block tracking-wide">FOR FIRMS</span>
-              <h2 className="text-4xl font-bold text-[#083462] mb-6">Help Operations for Firms</h2>
+              <h2 id="firms-heading" className="text-4xl font-bold text-[#083462] mb-6">Help Operations for Firms</h2>
               <p className="text-gray-600 text-lg mb-8">
                 Streamline administrative tasks, optimize tutor scheduling, and gain actionable insights 
                 with our comprehensive management dashboard.
@@ -446,13 +445,13 @@ function PageClientContent() {
         </div>
       </section>
       
-      <section id="students" className="py-24 bg-gradient-to-br from-purple-50 to-white relative">
+      <section id="students" className="py-24 bg-gradient-to-br from-purple-50 to-white relative" aria-labelledby="students-heading">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="w-full lg:w-1/2 order-2 lg:order-1">
               <span className="text-purple-600 font-semibold text-lg mb-2 block tracking-wide">FOR STUDENTS</span>
-              <h2 className="text-4xl font-bold text-[#083462] mb-6">Engage Students in a Studyverse</h2>
+              <h2 id="students-heading" className="text-4xl font-bold text-[#083462] mb-6">Engage Students in a Studyverse</h2>
               <p className="text-gray-600 text-lg mb-8">
                 Create an immersive learning environment with gamified experiences, interactive content, 
                 and personalized learning paths that make education exciting.
@@ -652,10 +651,47 @@ export default function Home() {
     </div>
   );
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Studyverse",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "description": "AI-powered tutoring platform infrastructure for education firms. Transform your tutoring business with student insights, tutor analytics, and operational visibility.",
+    "url": "https://studyverse.ai",
+    "author": {
+      "@type": "Organization",
+      "name": "Studyverse"
+    },
+    "offers": {
+      "@type": "Offer",
+      "category": "SaaS Platform",
+      "businessFunction": "Educational Technology"
+    },
+    "featureList": [
+      "AI-powered lesson planning",
+      "Student progress analytics", 
+      "Tutor management tools",
+      "Gamified learning experiences",
+      "Business intelligence for education firms",
+      "Automated content generation"
+    ],
+    "audience": {
+      "@type": "Audience",
+      "audienceType": ["Education Firms", "Tutoring Companies", "Educational Institutions"]
+    }
+  };
+
   return (
-    <Suspense fallback={fallbackContent}>
-      <PageClientContent />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <Suspense fallback={fallbackContent}>
+        <PageClientContent />
+      </Suspense>
+    </>
   );
 }
 

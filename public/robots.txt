@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Optimize crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://studyverse.ai/sitemap.xml
+
+# Block sensitive areas (if any)
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
