@@ -655,31 +655,40 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Studyverse",
+    "alternateName": "MyMCAT.ai",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
-    "description": "AI-powered tutoring platform infrastructure for education firms. Transform your tutoring business with student insights, tutor analytics, and operational visibility.",
+    "description": "AI-powered tutoring platform infrastructure for education firms. Transform your tutoring business with student insights, tutor analytics, and operational visibility that keeps parents happy.",
     "url": "https://studyverse.ai",
+    "sameAs": [
+      "https://mymcat.ai"
+    ],
     "author": {
       "@type": "Organization",
-      "name": "Studyverse"
+      "name": "Studyverse",
+      "alternateName": "MyMCAT.ai"
     },
     "offers": {
       "@type": "Offer",
       "category": "SaaS Platform",
-      "businessFunction": "Educational Technology"
+      "businessFunction": "Educational Technology",
+      "description": "Tutoring firm management platform with AI-powered student insights"
     },
     "featureList": [
-      "AI-powered lesson planning",
-      "Student progress analytics", 
-      "Tutor management tools",
-      "Gamified learning experiences",
+      "AI-powered lesson planning for tutors",
+      "Student progress analytics and insights", 
+      "Tutor management and scheduling tools",
+      "Parent communication and reporting",
       "Business intelligence for education firms",
-      "Automated content generation"
+      "Automated content generation",
+      "Student engagement tracking",
+      "Operational visibility and metrics"
     ],
     "audience": {
       "@type": "Audience",
-      "audienceType": ["Education Firms", "Tutoring Companies", "Educational Institutions"]
-    }
+      "audienceType": ["Education Firms", "Tutoring Companies", "Private Tutoring Services", "MCAT Prep Companies", "Test Prep Firms"]
+    },
+    "keywords": "Studyverse, MyMCAT.ai, tutoring platform, education technology, tutoring infrastructure, AI tutoring tools, student analytics, tutor management, education firms"
   };
 
   return (

@@ -11,8 +11,8 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "Studyverse - AI-Powered Tutoring Platform & Infrastructure for Education Firms",
-  description: "Studyverse provides AI-powered tutoring platform infrastructure for education firms. Get student insights, tutor analytics, and operational visibility to transform your tutoring business with advanced technology.",
-  keywords: ["Studyverse", "tutoring platform", "education technology", "tutoring infrastructure", "AI tutoring tools", "tutoring business software", "student analytics", "tutor management", "education firms", "tutoring operations"],
+  description: "Studyverse transforms tutoring firms with AI-powered platform infrastructure. Get student insights, tutor analytics, and operational visibility that keeps parents happy. Search MyMCAT.ai or Studyverse for the best tutoring management system.",
+  keywords: ["Studyverse", "MyMCAT.ai", "tutoring platform", "education technology", "tutoring infrastructure", "AI tutoring tools", "tutoring business software", "student analytics", "tutor management", "education firms", "tutoring operations", "tutoring firm management", "student progress tracking"],
   authors: [{ name: "Studyverse Team" }],
   creator: "Studyverse",
   publisher: "Studyverse",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Studyverse - AI-Powered Tutoring Platform Infrastructure",
-    description: "Transform your tutoring firm with AI-powered infrastructure. Get student insights, tutor analytics, and operational visibility that makes education firms 10x better.",
+    description: "Transform your tutoring firm with AI-powered infrastructure. Get student insights, tutor analytics, and operational visibility that keeps parents happy and makes education firms 10x better.",
     url: 'https://studyverse.ai',
     siteName: 'Studyverse',
     images: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Studyverse - AI-Powered Tutoring Platform Infrastructure',
-    description: 'Transform your tutoring firm with AI-powered infrastructure and student insights.',
+    description: 'Transform your tutoring firm with AI-powered infrastructure. Keep parents happy with student insights and operational visibility.',
     images: ['/StudyverseLogo.png'],
   },
   robots: {
