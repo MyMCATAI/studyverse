@@ -32,11 +32,11 @@ export default function MyCaseStudy() {
 
             <div className="bg-[#083462]/5 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-[#083462]/10 transition-all duration-300 flex flex-col justify-between">
               <div>
-                <h3 className="text-5xl font-bold text-[#083462] mb-3">2.8 hrs</h3>
+                <h3 className="text-5xl font-bold text-[#083462] mb-3">2.9 hrs</h3>
                 <p className="text-lg text-[#083462]/80 mb-2">Peak Daily Usage</p>
               </div>
               <p className="text-sm text-[#083462]/60 mt-2">
-                Peak usage in Feb 2024. Overall is 1.8 hrs (4x Duolingo avg).
+                From Janaury to March with ~129 DAU.
               </p>
             </div>
 
